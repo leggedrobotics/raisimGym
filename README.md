@@ -3,15 +3,14 @@
 # THIS LIBRARY DEPENDS ON RAISIM WHICH IS NOT PUBLICLY AVAILABLE YET. RAISIM WILL BE RELEASED VERY SOON #
 
 ## What is raisimGym
-raisimGym is an example of making a gym environment using raisim.
+raisimGym is an example of a gym environment using raisim. It uses stable-baselines (https://github.com/hill-a/stable-baselines) for training.
+However, it is meant to be an example of wrapping raisim as a gym environment. You can modify it to make it work with your favorite algorithms/frameworks.
 
 ## Requirements
 - Linux only. support ubuntu 16.04 and 18.04 but might work on other distributions
 - g++-6 or higher
 
 ## Install
-
-### Note
 Please install/save everything locally to prevent corrupting your system files. We will assume that you have a single workspace where you save all repos related to raisim. Here we introduce two variables
 
 - WORKSPACE: workspace where you clone your git repos
@@ -34,23 +33,23 @@ cmake .. -DCMAKE_INSTALL_PREFIX=LOCAL_BUILD -DPYBIND11_TEST=OFF
 make install -j4
 ```
 
-You might have to add ogre lib directory to your $LD_LIBRARY_PATH to ensure that ld finds it
+You might have to add LOCAL_BUILD/lib to your $LD_LIBRARY_PATH to ensure that ld finds Ogre3D.
 
 ## Workflow
-1. Compile your c++ environment (instructions followed)
-2. Run your learning script (instructions followed)
+1. ***Compile*** your c++ environment (instructions followed)
+2. ***Run*** your learning script (instructions followed)
 
 ## Compile
-Set your compiler as following
+Set your compiler to g++>6.0 as following
 
-```$xslt
+```$commandline
 export CXX=/usr/bin/g++-8 && export CC=/usr/bin/gcc-8
 ```
 
-Ensure that you have g++-6 or higher. Now compile it as
+Now compile raisimGym as
 
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
+python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
 ```
 The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
 
@@ -59,12 +58,12 @@ For building examples, ```setup.py``` will take a name instead of the full path.
 
 For the ANYmal example,
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env anymal
+python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env anymal
 ```
 
 For the Laikago example,
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env laikago
+python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env laikago
 ```
 
 ## Run
