@@ -1,0 +1,102 @@
+# raisimGym: RL examples using raisim
+
+# THIS LIBRARY DEPENDS ON RAISIM WHICH IS NOT PUBLICLY AVAILABLE YET. RAISIM WILL BE RELEASED VERY SOON #
+
+## What is raisimGym
+raisimGym is an example of making a gym environment using raisim.
+
+## Requirements
+- Linux only. support ubuntu 16.04 and 18.04 but might work on other distributions
+- g++-6 or higher
+
+## Install
+
+### Note
+Please install/save everything locally to prevent corrupting your system files. We will assume that you have a single workspace where you save all repos related to raisim. Here we introduce two variables
+
+- WORKSPACE: workspace where you clone your git repos
+- LOCAL_BUILD: build directory where you install exported cmake libraries
+
+### Installation
+Install the following dependencies
+
+- Raisim (https://github.com/leggedrobotics/raisimLib)
+- RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
+- yaml-cpp (sudo apt-get install libyaml-cpp-dev)
+
+Now install pybind11 as following
+
+```Cmake
+cd WORKSPACE
+git clone https://github.com/pybind/pybind11.git
+mkdir buidl && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=LOCAL_BUILD -DPYBIND11_TEST=OFF
+make install -j4
+```
+
+You might have to add ogre lib directory to your $LD_LIBRARY_PATH to ensure that ld finds it
+
+## Workflow
+1. Compile your c++ environment (instructions followed)
+2. Run your learning script (instructions followed)
+
+## Compile
+Set your compiler as following
+
+```$xslt
+export CXX=/usr/bin/g++-8 && export CC=/usr/bin/gcc-8
+```
+
+Ensure that you have g++-6 or higher. Now compile it as
+
+```
+python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
+```
+The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
+
+## Compiling examples
+For building examples, ```setup.py``` will take a name instead of the full path.
+
+For the ANYmal example,
+```
+python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env anymal
+```
+
+For the Laikago example,
+```
+python3 setup.py install --CMAKE_PREFIX_PATH /WHERE/RAISIM/AND/RAISIMOGRE/ARE --env laikago
+```
+
+## Run
+You can make your own runner. To use example scripts, 
+```$xslt
+python3 script/anymal_blind_locomotion.py
+```
+
+## Examples of trained policies
+
+### ANYmal
+- Trained with RTX 2080 + Intel 8700K + PPO [1]
+- 18 dof quadrupedal robot, 34-dimentional observation space
+
+Initial policy | 38 seconds of training  
+:-----------------------------------:|:------------------------------------:
+![alt-text-1](img/0.gif "title-1") | ![alt-text-2](img/50.gif "title-2")
+
+76 seconds of training   | 112 seconds of training  
+:-----------------------------------:|:------------------------------------:
+![alt-text-1](img/100.gif "title-1") | ![alt-text-2](img/150.gif "title-2")
+
+
+## Notes
+* Due to conversion between numpy and eigen, the interface class (e.g., VectorizedEnv) should use row major matrices only.
+
+## Common issues and workarounds
+- When build fails, try again after deleting the ```build``` folder
+
+## How to contribute?
+raisimGym is meant to be a minimal example. Please do not submit a pull request that contains features targeting specific applications.
+Bug fix/code clean-up are welcome. 
+
+## References
+[1] Schulman, John, et al. "Proximal policy optimization algorithms." arXiv preprint arXiv:1707.06347 (2017).
