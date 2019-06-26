@@ -16,7 +16,7 @@ Please install/save everything locally to prevent corrupting your system files. 
 - WORKSPACE: workspace where you clone your git repos
 - LOCAL_BUILD: build directory where you install exported cmake libraries
 
-### Installation
+### Dependencies
 Install the following dependencies
 
 - Raisim (https://github.com/leggedrobotics/raisimLib)
