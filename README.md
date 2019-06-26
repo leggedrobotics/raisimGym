@@ -97,5 +97,7 @@ Initial policy | 38 seconds of training
 raisimGym is meant to be a minimal example. Please do not submit a pull request that contains features targeting specific applications.
 Bug fix/code clean-up are welcome. 
 
+Fork the repo, make changes and then send a pull request. Instructions can be found [here](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork)
+
 ## References
 [1] Schulman, John, et al. "Proximal policy optimization algorithms." arXiv preprint arXiv:1707.06347 (2017).
