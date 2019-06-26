@@ -23,7 +23,6 @@ Here we introduce two variables
 
 ### Dependencies
 Install the following dependencies
-
 - Raisim (https://github.com/leggedrobotics/raisimLib)
 - RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
 - yaml-cpp (sudo apt-get install libyaml-cpp-dev)
@@ -31,10 +30,10 @@ Install the following dependencies
 Now install pybind11 as following
 
 ```Cmake
-cd WORKSPACE
+cd $WORKSPACE
 git clone https://github.com/pybind/pybind11.git
-mkdir buidl && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=LOCAL_BUILD -DPYBIND11_TEST=OFF
+cd pybind11 && git checkout v2.2.4 && mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF
 make install -j4
 ```
 
@@ -59,20 +58,17 @@ python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env /WHERE/YOUR/CUSTO
 The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
 
 ## Compiling examples
-For building examples, ```setup.py``` will take a name instead of the full path.
-
 For the ANYmal example,
 ```
 python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env anymal
 ```
-
 For the Laikago example,
 ```
 python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env laikago
 ```
 
 ## Run
-You can make your own runner. To use example scripts, 
+You can make your own runner. To use the example runner, 
 ```$xslt
 python3 script/anymal_blind_locomotion.py
 ```
