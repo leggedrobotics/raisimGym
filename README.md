@@ -13,7 +13,7 @@ However, it is meant to be an example of wrapping raisim as a gym environment. Y
 ## Install
 Please install/save everything locally to prevent corrupting your system files. We will assume that you have a single workspace where you save all repos related to raisim. 
 
-You can check out dockers/ubuntu1804/Dockerfile if you are stuck. If you are happy with working in a Docker docker container, make an image out of it.
+You can check out our [docker file](/dockers/ubuntu1804/Dockerfile) if you are stuck. If you are happy with working in a Docker docker container, make an image out of it.
 
 
 Here we introduce two variables
