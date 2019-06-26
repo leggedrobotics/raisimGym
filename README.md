@@ -74,7 +74,7 @@ python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env laikago
 ## Run
 You can make your own runner. To use example scripts, 
 ```$xslt
-python3 script/anymal_blind_locomotion.py
+python3 scripts/anymal_blind_locomotion.py
 ```
 
 ## Examples of trained policies
