@@ -8,7 +8,8 @@ However, it is meant to be an example of wrapping raisim as a gym environment. Y
 
 ## Requirements
 - Linux only. support ubuntu 16.04 and 18.04 but might work on other distributions
-- g++-6 or higher
+- g++, gcc > 6 ([how to install?](https://github.com/jhwangbo/raisimHelp/tree/master#how-to-install-latest-version-of-g))
+- cmake > 3.10 ([how to install?](https://github.com/jhwangbo/raisimHelp/tree/master#how-to-install-cmake))
 
 ## Install
 Please install/save everything locally to prevent corrupting your system files. We will assume that you have a single workspace where you save all repos related to raisim. 
@@ -21,11 +22,18 @@ Here we introduce two variables
 - WORKSPACE: workspace where you clone your git repos
 - LOCAL_BUILD: build directory where you install exported cmake libraries
 
+### Python setup
+1. Install python3 
+    -For Ubuntu18.04 (sudo apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev)
+    -For Ubuntu16.04 (sudo apt-get install -y cmake python3.5-dev python5-pip libpython3.5-dev)
+2. Setup your python environment (virtualenv or conda) with Python > 3.5 
+
 ### Dependencies
 Install the following dependencies
 - Raisim (https://github.com/leggedrobotics/raisimLib)
 - RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
 - yaml-cpp (sudo apt-get install libyaml-cpp-dev)
+- libpython3.X-dev (sudo apt-get install libpython3.6-dev)
 
 Now install pybind11 as following
 
@@ -37,7 +45,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF
 make install -j4
 ```
 
-You might have to add LOCAL_BUILD/lib to your $LD_LIBRARY_PATH to ensure that ld finds Ogre3D.
+You might have to add LOCAL_BUILD/lib to your $LD_LIBRARY_PATH to ensure that ld finds Ogre3D shared objects.
 
 ## Workflow
 1. ***Compile*** your c++ environment (instructions followed)

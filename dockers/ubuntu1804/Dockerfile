@@ -19,7 +19,7 @@ RUN mkdir -p $LOCAL_BUILD
 # ==================================================================
 # tools
 # ------------------------------------------------------------------
-RUN apt-get install -y cmake python3.6-dev python3-pip
+RUN apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev
 
 # ==================================================================
 # tensorflow
