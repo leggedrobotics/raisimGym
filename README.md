@@ -24,8 +24,8 @@ Here we introduce two variables
 
 ### Python setup
 1. Install python3 
-    -For Ubuntu18.04 (sudo apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev)
-    -For Ubuntu16.04 (sudo apt-get install -y cmake python3.5-dev python5-pip libpython3.5-dev)
+    - For Ubuntu18.04 (sudo apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev)
+    - For Ubuntu16.04 (sudo apt-get install -y cmake python3.5-dev python5-pip libpython3.5-dev)
 2. Setup your python environment (virtualenv or conda) with Python > 3.5 
 
 ### Dependencies
@@ -37,12 +37,8 @@ Install the following dependencies
 
 Now install pybind11 as following
 
-```Cmake
-cd $WORKSPACE
-git clone https://github.com/pybind/pybind11.git
-cd pybind11 && git checkout v2.2.4 && mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF
-make install -j4
+```commandline
+python3 setup.py install
 ```
 
 You might have to add LOCAL_BUILD/lib to your $LD_LIBRARY_PATH to ensure that ld finds Ogre3D shared objects.
