@@ -68,11 +68,11 @@ The "--env" directory should include a file called "Environment.hpp" which conta
 ## Compiling examples
 For the ANYmal example,
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env anymal
+python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env anymal
 ```
 For the Laikago example,
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env laikago
+python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env laikago
 ```
 
 ## Run
