@@ -24,8 +24,8 @@ Here we introduce two variables
 
 ### Python setup
 1. Install python3 
-    -For Ubuntu18.04 (sudo apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev)
-    -For Ubuntu16.04 (sudo apt-get install -y cmake python3.5-dev python5-pip libpython3.5-dev)
+    - For Ubuntu18.04 (sudo apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev)
+    - For Ubuntu16.04 (sudo apt-get install -y cmake python3.5-dev python5-pip libpython3.5-dev)
 2. Setup your python environment (virtualenv or conda) with Python > 3.5 
 
 ### Dependencies
