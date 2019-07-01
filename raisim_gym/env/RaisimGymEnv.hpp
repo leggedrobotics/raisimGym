@@ -57,11 +57,15 @@ class RaisimGymEnv {
   virtual void reset() = 0;
   virtual void setSeed(int seed) = 0;
   virtual void observe(Eigen::Ref<EigenVec> ob) = 0;
-  virtual void close() = 0;
   virtual float step(const Eigen::Ref<EigenVec>& action) = 0;
   virtual bool isTerminalState(float& terminalReward) = 0;
-  virtual void updateExtraInfo() = 0;
   ////////////////////////////////////////
+
+  /////// optional methods ///////
+  virtual void curriculumUpdate() {};
+  virtual void close() {};
+  virtual void updateExtraInfo() {};
+  ////////////////////////////////
 
   void setSimulationTimeStep(double dt) {
     simulation_dt_ = dt;

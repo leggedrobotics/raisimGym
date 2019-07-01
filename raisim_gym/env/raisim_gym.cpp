@@ -35,5 +35,7 @@ PYBIND11_MODULE(_raisim_gym, m) {
     .def("getExtraInfoDim", &VectorizedEnvironment<ENVIRONMENT>::getExtraInfoDim)
     .def("getNumOfEnvs", &VectorizedEnvironment<ENVIRONMENT>::getNumOfEnvs)
     .def("startRecordingVideo", &VectorizedEnvironment<ENVIRONMENT>::startRecordingVideo)
-    .def("stopRecordingVideo", &VectorizedEnvironment<ENVIRONMENT>::stopRecordingVideo);
+    .def("stopRecordingVideo", &VectorizedEnvironment<ENVIRONMENT>::stopRecordingVideo)
+    .def("curriculumUpdate", &VectorizedEnvironment<ENVIRONMENT>::curriculumUpdate);
+
 }

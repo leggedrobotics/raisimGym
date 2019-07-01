@@ -77,6 +77,9 @@ class RaisimGymVecEnv(VecEnv):
     def stop_recording_video(self):
         self.wrapper.stopRecordingVideo()
 
+    def curriculum_callback(self):
+        self.wrapper.curriculumUpdate()
+
     def step_async(self):
         raise RuntimeError('This method is not implemented')
 

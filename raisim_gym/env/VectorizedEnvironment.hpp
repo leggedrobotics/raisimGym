@@ -155,6 +155,12 @@ class VectorizedEnvironment {
   int getExtraInfoDim() { return extraInfoName_.size(); }
   int getNumOfEnvs() { return num_envs_; }
 
+  ////// optional methods //////
+  void curriculumUpdate() {
+    for (auto *env: environments_)
+      env->curriculumUpdate();
+  };
+
  private:
 
   inline void perAgentStep(int agentId,
