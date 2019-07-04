@@ -110,10 +110,9 @@ void imguiRenderCallBack() {
   auto selected = vis->getSelected();
   auto ro = std::get<0>(selected);
   auto li = std::get<1>(selected);
-  auto valid = std::get<2>(selected);
 
   if (ImGui::CollapsingHeader("Object data")) {
-    if(valid) {
+    if(ro) {
       ImGui::PushFont(fontBig);
       if(!ro->getName().empty()){
         ImGui::Text("%s", ("name: " + ro->getName() + "/" + vis->getSelectedGraphicalObject()->name).c_str());
