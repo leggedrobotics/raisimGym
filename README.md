@@ -3,8 +3,7 @@
 # THIS LIBRARY DEPENDS ON RAISIM WHICH IS NOT PUBLICLY AVAILABLE YET. RAISIM WILL BE RELEASED VERY SOON #
 
 ## What is raisimGym
-raisimGym is an example of a gym environment using raisim. It uses stable-baselines (https://github.com/hill-a/stable-baselines) for training.
-However, it is meant to be an example of wrapping raisim as a gym environment. You can modify it to make it work with your favorite algorithms/frameworks.
+raisimGym is an example of a gym environment using raisim. It uses stable-baselines (https://github.com/hill-a/stable-baselines) for training and pybind11 (https://github.com/pybind/pybind11) for wrapping raisim in python.
 
 ## Requirements
 - Linux only. support ubuntu 16.04 and 18.04 but might work on other distributions
