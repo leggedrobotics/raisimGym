@@ -133,8 +133,8 @@ class ENVIRONMENT : public RaisimGymEnv {
       /// starts visualizer thread
       vis->initApp();
 
-      anymalVisual_ = vis->createArticulatedSystemVisualAndRegister(anymal_, "ANYmal");
-      vis->createGroundVisualAndRegister(ground, 20, "floor", "checkerboard_green");
+      anymalVisual_ = vis->createGraphicalObject(anymal_, "ANYmal");
+      vis->createGraphicalObject(ground, 20, "floor", "checkerboard_green");
       desired_fps_ = 50.;
       vis->setDesiredFPS(desired_fps_);
     }

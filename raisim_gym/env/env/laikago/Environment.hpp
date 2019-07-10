@@ -133,8 +133,8 @@ class ENVIRONMENT : public RaisimGymEnv {
       /// starts visualizer thread
       vis->initApp();
 
-      laikagoVisual_ = vis->createArticulatedSystemVisualAndRegister(laikago_, "Laikago");
-      vis->createGroundVisualAndRegister(ground, 20, "floor", "checkerboard_green");
+      laikagoVisual_ = vis->createGraphicalObject(laikago_, "Laikago");
+      vis->createGraphicalObject(ground, 20, "floor", "checkerboard_green");
       desired_fps_ = 50.;
       vis->setDesiredFPS(desired_fps_);
     }
