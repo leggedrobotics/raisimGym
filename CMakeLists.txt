@@ -4,7 +4,6 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(pybind11 2.2.4 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(raisim CONFIG REQUIRED)
 find_package(raisimOgre CONFIG REQUIRED)
 find_package(OpenMP REQUIRED)
 
@@ -14,5 +13,5 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}
 
 pybind11_add_module(_raisim_gym raisim_gym/env/raisim_gym.cpp)
 target_link_libraries(_raisim_gym PRIVATE raisim::raisim raisim::raisimOgre yaml-cpp)
-target_include_directories(_raisim_gym PUBLIC raisim_gym/env ${RSG_ENVIRONMENT_INCLUDE_PATH} ${EIGEN3_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+target_include_directories(_raisim_gym PUBLIC raisim_gym/env ${RSG_ENVIRONMENT_INCLUDE_PATH} ${EIGEN3_INCLUDE_DIRS})
 target_compile_options(_raisim_gym PRIVATE -march=native -mtune=native -fPIC -O3)
