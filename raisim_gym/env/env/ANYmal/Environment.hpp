@@ -57,7 +57,7 @@ class ENVIRONMENT : public RaisimGymEnv {
       RaisimGymEnv(resourceDir, cfg), distribution_(0.0, 0.2), visualizable_(visualizable) {
 
     /// add objects
-    anymal_ = world_->addArticulatedSystem(resourceDir_+"/anymal.urdf");
+    anymal_ = world_->addArticulatedSystem(resourceDir_+"/urdf/anymal.urdf");
     anymal_->setControlMode(raisim::ControlMode::PD_PLUS_FEEDFORWARD_TORQUE);
     auto ground = world_->addGround();
     world_->setERP(0,0);
@@ -123,7 +123,7 @@ class ENVIRONMENT : public RaisimGymEnv {
 
       /// these method must be called before initApp
       vis->setWorld(world_.get());
-      vis->setWindowSize(1800, 1200);
+      vis->setWindowSize(1280, 720);
       vis->setImguiSetupCallback(imguiSetupCallback);
       vis->setImguiRenderCallback(imguiRenderCallBack);
       vis->setKeyboardCallback(raisimKeyboardCallback);
@@ -135,7 +135,7 @@ class ENVIRONMENT : public RaisimGymEnv {
 
       anymalVisual_ = vis->createGraphicalObject(anymal_, "ANYmal");
       vis->createGraphicalObject(ground, 20, "floor", "checkerboard_green");
-      desired_fps_ = 50.;
+      desired_fps_ = 60.;
       vis->setDesiredFPS(desired_fps_);
     }
   }
@@ -182,8 +182,9 @@ class ENVIRONMENT : public RaisimGymEnv {
 
       /// reset camera
       auto vis = raisim::OgreVis::get();
+
       vis->select(anymalVisual_->at(0), false);
-      vis->getCameraMan()->setYawPitchDist(Ogre::Radian(3.14), Ogre::Radian(-1.3), 3);
+      vis->getCameraMan()->setYawPitchDist(Ogre::Radian(3.14), Ogre::Radian(-1.3), 3, true);
     }
 
     return torqueReward_ + forwardVelReward_;

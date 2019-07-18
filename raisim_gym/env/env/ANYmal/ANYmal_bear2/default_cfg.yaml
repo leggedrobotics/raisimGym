@@ -9,4 +9,4 @@ environment:
   max_time: 4.0
 
   forwardVelRewardCoeff: 0.3
-  torqueRewardCoeff: -4e-5
+  torqueRewardCoeff: -2e-5
