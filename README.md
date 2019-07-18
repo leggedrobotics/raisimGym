@@ -46,6 +46,8 @@ You might have to add LOCAL_BUILD/lib to your $LD_LIBRARY_PATH to ensure that ld
 1. ***Compile*** your c++ environment (instructions followed)
 2. ***Run*** your learning script (instructions followed)
 
+or use the dockerfile provided (instruction below)
+
 ## Compile
 Set your compiler to g++>6.0 as following
 
@@ -75,6 +77,12 @@ You can make your own runner. To use the example runner,
 ```$xslt
 python3 scripts/anymal_blind_locomotion.py
 ```
+
+## Using raisimGym in Docker
+1. Install docker and Nvidia-docker2 ([instruction](https://github.com/jhwangbo/raisimHelp/tree/master#install-docker--nvidia-docker2)).
+2. Build an image ```docker build -t raisim_gym $WORKSPACE/raisimGym/dockers/gpu```
+3. Run the image using the provided runner ```$WORKSPACE/raisimGym/dockers/gpu/runner.bash```
+4. compile your environment and run your runner
 
 ## Examples of trained policies
 
