@@ -16,7 +16,7 @@ Here we introduce two variables
 - WORKSPACE: workspace where you clone your git repos
 - LOCAL_BUILD: build directory where you install exported cmake libraries
 
-You can check out our [docker file](/dockers/ubuntu1804/Dockerfile) if you are stuck.
+You can check out our [docker file](/dockers/gpu/Dockerfile) if you are stuck.
 
 ### Python setup
 1. Install python3 
