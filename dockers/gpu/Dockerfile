@@ -66,13 +66,6 @@ RUN pip3 install ruamel.yaml
 RUN cd $WORKSPACE && git clone https://github.com/leggedrobotics/raisimGym.git
 
 # ==================================================================
-# display
-# ------------------------------------------------------------------
-# For nvidia GUI issues
-ENV NVIDIA_VISIBLE_DEVICES ${NVIDIA_VISIBLE_DEVICES:-all}
-ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
-
-# ==================================================================
 # add ld path
 # ------------------------------------------------------------------
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$LOCAL_BUILD/lib"
