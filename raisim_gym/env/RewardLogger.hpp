@@ -69,7 +69,7 @@ class RewardLogger {
   }
 
   void clean() {
-    for (auto item : rewardTerms_)
+    for (auto& item : rewardTerms_)
       item.second.clean();
   }
 

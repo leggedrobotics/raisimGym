@@ -80,7 +80,7 @@ class VectorizedEnvironment {
 
   // resets all environments and returns observation
   void reset(Eigen::Ref<EigenRowMajorMat>& ob) {
-    for (auto &env: environments_)
+    for (auto env: environments_)
       env->reset();
 
     observe(ob);
