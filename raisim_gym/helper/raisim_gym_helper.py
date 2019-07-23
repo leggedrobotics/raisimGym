@@ -25,5 +25,4 @@ def TensorboardLauncher(directory_path):
     tb = program.TensorBoard()
     tb.configure(argv=[None, '--logdir', directory_path])
     url = tb.launch()
-    chrome_path = '/usr/bin/google-chrome %s'
-    webbrowser.get(chrome_path).open(url)
+    webbrowser.open_new(url)
