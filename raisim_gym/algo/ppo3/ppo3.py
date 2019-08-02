@@ -1,20 +1,17 @@
 import time
 import sys
 import multiprocessing
-from collections import deque
 
 import gym
 import numpy as np
 import tensorflow as tf
 
+from raisim_gym.archi.policies import LstmPolicy, ActorCriticPolicy
 from stable_baselines import logger
 from stable_baselines.common import explained_variance, ActorCriticRLModel, tf_util, SetVerbosity, TensorboardWriter
-from stable_baselines.common.runners import AbstractEnvRunner
-from raisim_gym.archi.policies import LstmPolicy, ActorCriticPolicy
-from stable_baselines.a2c.utils import total_episode_reward_logger
 
 
-class PPO2(ActorCriticRLModel):
+class PPO3(ActorCriticRLModel):
     """
     Proximal Policy Optimization algo (GPU version).
     Paper: https://arxiv.org/abs/1707.06347
@@ -44,9 +41,9 @@ class PPO2(ActorCriticRLModel):
     def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
                  max_grad_norm=0.5, lam=0.95, nminibatches=4, noptepochs=4, cliprange=0.2, verbose=0,
                  tensorboard_log=None, _init_setup_model=True, policy_kwargs=None,
-                 full_tensorboard_log=False):
+                 full_tensorboard_log=False, reset_num_timesteps=True, seed=None):
 
-        super(PPO2, self).__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
+        super(PPO3, self).__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
                                    _init_setup_model=_init_setup_model, policy_kwargs=policy_kwargs)
 
         self.learning_rate = learning_rate
@@ -89,8 +86,46 @@ class PPO2(ActorCriticRLModel):
         self.summary = None
         self.episode_reward = None
 
+        # added by Jemin
+        self.actions = None
+        self.__new_tb_log = None
+        self.__states = None
+
+        self.__rewards = []
+        self.__obs = []
+        self.__returns = []
+        self.__masks = []
+        self.__actions = []
+        self.__values = []
+        self.__neglogpacs = []
+        self.__ep_infos = []
+        self.__true_reward = []
+        self.__dones = []
+
+        self.__ep_infos = []
+        self.__ep_info_buf = []
+
+        # Transform to callable if needed
+        self.learning_rate = get_schedule_fn(self.learning_rate)
+        self.cliprange = get_schedule_fn(self.cliprange)
+
         if _init_setup_model:
             self.setup_model()
+
+        self.__new_tb_log = self._init_num_timesteps(reset_num_timesteps)
+
+        n_env = env.num_envs
+        self.batch_ob_shape = (n_env*n_steps,) + env.observation_space.shape
+        self.obs = np.zeros((n_env,) + env.observation_space.shape, dtype=env.observation_space.dtype.name)
+        self.obs[:] = env.reset()
+        self.n_steps = n_steps
+        self.states = self.initial_state
+        self.dones = [False for _ in range(n_env)]
+
+        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, 'PPO', self.__new_tb_log) \
+                as writer:
+            self._setup_learn(seed)
+            self.episode_reward = np.zeros((self.n_envs,))
 
     def _get_pretrain_placeholders(self):
         policy = self.act_model
@@ -117,8 +152,8 @@ class PPO2(ActorCriticRLModel):
                 n_batch_step = None
                 n_batch_train = None
                 if issubclass(self.policy, LstmPolicy):
-                    assert self.n_envs % self.nminibatches == 0, "For recurrent policies, "\
-                        "the number of environments run in parallel should be a multiple of nminibatches."
+                    assert self.n_envs % self.nminibatches == 0, "For recurrent policies, " \
+                                                                 "the number of environments run in parallel should be a multiple of nminibatches."
                     n_batch_step = self.n_envs
                     n_batch_train = self.n_batch // self.nminibatches
 
@@ -262,231 +297,126 @@ class PPO2(ActorCriticRLModel):
 
         return policy_loss, value_loss, policy_entropy, approxkl, clipfrac
 
-    def learn(self, total_timesteps, callback=None, seed=None, log_interval=1, tb_log_name="PPO2",
-              eval_every_n=5, reset_num_timesteps=True, record_video=False, log_dir=""):
-        # Transform to callable if needed
-        self.learning_rate = get_schedule_fn(self.learning_rate)
-        self.cliprange = get_schedule_fn(self.cliprange)
-
-        new_tb_log = self._init_num_timesteps(reset_num_timesteps)
-
-        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name, new_tb_log) \
-                as writer:
-            self._setup_learn(seed)
-
-            runner = Runner(env=self.env, model=self, n_steps=self.n_steps, gamma=self.gamma, lam=self.lam)
-            self.episode_reward = np.zeros((self.n_envs,))
-
-            ep_info_buf = deque(maxlen=100)
-            t_first_start = time.time()
-
-            nupdates = total_timesteps // self.n_batch
-
-            for update in range(1, nupdates + 1):
-                if update % eval_every_n == 1:
-                    print("[RAISIM_GYM] Visualizing in RaiSimOgre")
-                    obs, returns, masks, actions, values, neglogpacs, states, ep_infos, true_reward = \
-                        runner.run(test_mode=True, record_video=record_video, video_name=log_dir+"/"+str(update-1)+".mp4")
-                    print("Average rewards in this test episode ", ep_infos[0]['r'])
-                    # tensorboard_log(logger, ep_infos, self.sess)
-
-                assert self.n_batch % self.nminibatches == 0
-                batch_size = self.n_batch // self.nminibatches
-                t_start = time.time()
-                frac = 1.0 - (update - 1.0) / nupdates
-                lr_now = self.learning_rate(frac)
-                cliprangenow = self.cliprange(frac)
-                # true_reward is the reward without discount
-                obs, returns, masks, actions, values, neglogpacs, states, ep_infos, true_reward = runner.run()
-                ep_info_buf.extend(ep_infos)
-                mb_loss_vals = []
-                if states is None:  # nonrecurrent version
-                    update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
-                    inds = np.arange(self.n_batch)
-                    for epoch_num in range(self.noptepochs):
-                        np.random.shuffle(inds)
-                        for start in range(0, self.n_batch, batch_size):
-                            timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_batch + epoch_num *
-                                                                            self.n_batch + start) // batch_size)
-                            end = start + batch_size
-                            mbinds = inds[start:end]
-                            slices = (arr[mbinds] for arr in (obs, returns, masks, actions, values, neglogpacs))
-                            mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, writer=writer,
-                                                                 update=timestep))
-                    self.num_timesteps += (self.n_batch * self.noptepochs) // batch_size * update_fac
-                else:  # recurrent version
-                    update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
-                    assert self.n_envs % self.nminibatches == 0
-                    env_indices = np.arange(self.n_envs)
-                    flat_indices = np.arange(self.n_envs * self.n_steps).reshape(self.n_envs, self.n_steps)
-                    envs_per_batch = batch_size // self.n_steps
-                    for epoch_num in range(self.noptepochs):
-                        np.random.shuffle(env_indices)
-                        for start in range(0, self.n_envs, envs_per_batch):
-                            timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_envs + epoch_num *
-                                                                            self.n_envs + start) // envs_per_batch)
-                            end = start + envs_per_batch
-                            mb_env_inds = env_indices[start:end]
-                            mb_flat_inds = flat_indices[mb_env_inds].ravel()
-                            slices = (arr[mb_flat_inds] for arr in (obs, returns, masks, actions, values, neglogpacs))
-                            mb_states = states[mb_env_inds]
-                            mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, update=timestep,
-                                                                 writer=writer, states=mb_states))
-                    self.num_timesteps += (self.n_envs * self.noptepochs) // envs_per_batch * update_fac
-
-                loss_vals = np.mean(mb_loss_vals, axis=0)
-                t_now = time.time()
-                fps = int(self.n_batch / (t_now - t_start))
-
-                if writer is not None:
-                    self.episode_reward = total_episode_reward_logger(self.episode_reward,
-                                                                      true_reward.reshape((self.n_envs, self.n_steps)),
-                                                                      masks.reshape((self.n_envs, self.n_steps)),
-                                                                      writer, self.num_timesteps)
-
-                if self.verbose >= 1 and (update % log_interval == 0 or update == 1):
-                    explained_var = explained_variance(values, returns)
-                    logger.logkv("serial_timesteps", update * self.n_steps)
-                    logger.logkv("nupdates", update)
-                    logger.logkv("total_timesteps", self.num_timesteps)
-                    logger.logkv("fps", fps)
-                    logger.logkv("explained_variance", float(explained_var))
-                    if len(ep_info_buf) > 0 and len(ep_info_buf[0]) > 0:
-                        logger.logkv('ep_reward_mean', safe_mean([ep_info['r'] for ep_info in ep_info_buf]))
-                        logger.logkv('ep_len_mean', safe_mean([ep_info['l'] for ep_info in ep_info_buf]))
-                    logger.logkv('time_elapsed', t_start - t_first_start)
-                    for (loss_val, loss_name) in zip(loss_vals, self.loss_names):
-                        logger.logkv(loss_name, loss_val)
-                    logger.dumpkvs()
-
-                if callback is not None:
-                    # Only stop training if return value is False, not when it is None. This is for backwards
-                    # compatibility with callbacks that have no return statement.
-                    if callback(locals(), globals()) is False:
-                        break
-
-            return self
-
-    def save(self, save_path):
-        data = {
-            "gamma": self.gamma,
-            "n_steps": self.n_steps,
-            "vf_coef": self.vf_coef,
-            "ent_coef": self.ent_coef,
-            "max_grad_norm": self.max_grad_norm,
-            "learning_rate": self.learning_rate,
-            "lam": self.lam,
-            "nminibatches": self.nminibatches,
-            "noptepochs": self.noptepochs,
-            "cliprange": self.cliprange,
-            "verbose": self.verbose,
-            "policy": self.policy,
-            "observation_space": self.observation_space,
-            "action_space": self.action_space,
-            "n_envs": self.n_envs,
-            "_vectorize_action": self._vectorize_action,
-            "policy_kwargs": self.policy_kwargs
-        }
-
-        params = self.sess.run(self.params)
-
-        self._save_to_file(save_path, data=data, params=params)
-
-
-class Runner(AbstractEnvRunner):
-    def __init__(self, *, env, model, n_steps, gamma, lam):
-        """
-        A runner to learn the policy of an environment for a model
-
-        :param env: (Gym environment) The environment to learn from
-        :param model: (Model) The model to learn
-        :param n_steps: (int) The number of steps to run for each environment
-        :param gamma: (float) Discount factor
-        :param lam: (float) Factor for trade-off of bias vs variance for Generalized Advantage Estimator
-        """
-        super().__init__(env=env, model=model, n_steps=n_steps)
-        self.lam = lam
-        self.gamma = gamma
-
-    def run(self, test_mode=False, record_video=False, video_name=""):
-        """
-        Run a learning step of the model
-
-        :return:
-            - observations: (np.ndarray) the observations
-            - rewards: (np.ndarray) the rewards
-            - masks: (numpy bool) whether an episode is over or not
-            - actions: (np.ndarray) the actions
-            - values: (np.ndarray) the value function output
-            - negative log probabilities: (np.ndarray)
-            - states: (np.ndarray) the internal states of the recurrent policies
-            - infos: (dict) the extra information of the model
-        """
-
-        # mb stands for minibatch
-        mb_obs, mb_rewards, mb_actions, mb_values, mb_dones, mb_neglogpacs = [], [], [], [], [], []
-        mb_states = self.states
-        ep_infos = []
-
-        if record_video:
-            self.env.start_recording_video(video_name)
-
-        for _ in range(self.n_steps):
-            actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
-            mb_obs.append(self.obs.copy())
-            mb_actions.append(actions)
-            mb_values.append(values)
-            mb_neglogpacs.append(neglogpacs)
-            mb_dones.append(self.dones)
-            clipped_actions = actions
-            # Clip the actions to avoid out of bound error
-            if isinstance(self.env.action_space, gym.spaces.Box):
-                clipped_actions = np.clip(actions, self.env.action_space.low, self.env.action_space.high)
-            self.obs[:], rewards, self.dones, infos = self.env.step(clipped_actions, visualize=test_mode)
-            for info in infos:
-                maybe_ep_info = info.get('episode')
-                if maybe_ep_info is not None:
-                    ep_infos.append(maybe_ep_info)
-            mb_rewards.append(rewards)
-
-        if record_video:
-            self.env.stop_recording_video()
+    def learn(self, total_timesteps=0, callback=None, seed=None, log_interval=1, tb_log_name="PPO2",
+              eval_every_n=5, reset_num_timesteps=True, record_video=False, update=0, nupdates=0):
 
         # batch of steps to batch of rollouts
-        mb_obs = np.asarray(mb_obs, dtype=self.obs.dtype)
-        mb_rewards = np.asarray(mb_rewards, dtype=np.float32)
-        mb_actions = np.asarray(mb_actions)
-        mb_values = np.asarray(mb_values, dtype=np.float32)
-        mb_neglogpacs = np.asarray(mb_neglogpacs, dtype=np.float32)
-        mb_dones = np.asarray(mb_dones, dtype=np.bool)
-        last_values = self.model.value(self.obs, self.states, self.dones)
+        self.__obs = np.asarray(self.__obs, dtype=self.obs.dtype)
+        self.__rewards = np.asarray(self.__rewards, dtype=np.float32)
+        self.__actions = np.asarray(self.__actions)
+        self.__values = np.asarray(self.__values, dtype=np.float32)
+        self.__neglogpacs = np.asarray(self.__neglogpacs, dtype=np.float32)
+        self.__dones = np.asarray(self.__dones, dtype=np.bool)
+        last_values = self.value(self.obs, self.states, self.dones)
         # discount/bootstrap off value fn
-        mb_advs = np.zeros_like(mb_rewards)
-        true_reward = np.copy(mb_rewards)
+        mb_advs = np.zeros_like(self.__rewards)
+        true_reward = np.copy(self.__rewards)
         last_gae_lam = 0
         for step in reversed(range(self.n_steps)):
             if step == self.n_steps - 1:
                 nextnonterminal = 1.0 - self.dones
                 nextvalues = last_values
             else:
-                nextnonterminal = 1.0 - mb_dones[step + 1]
-                nextvalues = mb_values[step + 1]
-            delta = mb_rewards[step] + self.gamma * nextvalues * nextnonterminal - mb_values[step]
+                nextnonterminal = 1.0 - self.__dones[step + 1]
+                nextvalues = self.__values[step + 1]
+            delta = self.__rewards[step] + self.gamma * nextvalues * nextnonterminal - self.__values[step]
             mb_advs[step] = last_gae_lam = delta + self.gamma * self.lam * nextnonterminal * last_gae_lam
-        mb_returns = mb_advs + mb_values
+        mb_returns = mb_advs + self.__values
 
         np.set_printoptions(threshold=sys.maxsize)
 
-        mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward = \
-            map(swap_and_flatten, (mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward))
+        self.__obs, self.__returns, self.__dones, self.__actions, self.__values, self.__neglogpacs, self.__true_reward = \
+            map(swap_and_flatten, (self.__obs, mb_returns, self.__dones, self.__actions, self.__values, self.__neglogpacs, true_reward))
 
-        # resetting environments, added by Jemin
-        self.obs, infos = self.env.reset_and_update_info()
+        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name,
+                                                           self.__new_tb_log) as writer:
+            assert self.n_batch % self.nminibatches == 0
+            batch_size = self.n_batch // self.nminibatches
+            frac = 1.0 - (update - 1.0) / nupdates
+            lr_now = self.learning_rate(frac)
+            cliprangenow = self.cliprange(frac)
 
-        for info in infos:
-            ep_infos.append(info.get('episode'))
+            mb_loss_vals = []
+            if self.__states is None:  # nonrecurrent version
+                update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
+                inds = np.arange(self.n_batch)
+                for epoch_num in range(self.noptepochs):
+                    np.random.shuffle(inds)
+                    for start in range(0, self.n_batch, batch_size):
+                        timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_batch + epoch_num *
+                                                                        self.n_batch + start) // batch_size)
+                        end = start + batch_size
+                        mbinds = inds[start:end]
+                        slices = (arr[mbinds] for arr in (self.__obs, self.__returns, self.__dones, self.__actions, self.__values, self.__neglogpacs))
+                        mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, writer=writer,
+                                                             update=timestep))
+                self.num_timesteps += self.n_steps * self.n_envs
+            else:  # recurrent version
+                update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
+                assert self.n_envs % self.nminibatches == 0
+                env_indices = np.arange(self.n_envs)
+                flat_indices = np.arange(self.n_envs * self.n_steps).reshape(self.n_envs, self.n_steps)
+                envs_per_batch = batch_size // self.n_steps
+                for epoch_num in range(self.noptepochs):
+                    np.random.shuffle(env_indices)
+                    for start in range(0, self.n_envs, envs_per_batch):
+                        timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_envs + epoch_num *
+                                                                        self.n_envs + start) // envs_per_batch)
+                        end = start + envs_per_batch
+                        mb_env_inds = env_indices[start:end]
+                        mb_flat_inds = flat_indices[mb_env_inds].ravel()
+                        slices = (arr[mb_flat_inds] for arr in (self.__obs, self.__returns, self.__masks, self.__actions, self.__values, self.__neglogpacs))
+                        mb_states = self.__states[mb_env_inds]
+                        mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, update=timestep,
+                                                             writer=writer, states=mb_states))
+                self.num_timesteps += self.n_steps * self.n_envs
 
-        return mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, mb_states, ep_infos, true_reward
+        self.__obs, self.__rewards, self.__actions, self.__values, self.__dones, self.__neglogpacs = [], [], [], [], [], []
+
+    def save(self, save_path):
+            data = {
+                "gamma": self.gamma,
+                "n_steps": self.n_steps,
+                "vf_coef": self.vf_coef,
+                "ent_coef": self.ent_coef,
+                "max_grad_norm": self.max_grad_norm,
+                "learning_rate": self.learning_rate,
+                "lam": self.lam,
+                "nminibatches": self.nminibatches,
+                "noptepochs": self.noptepochs,
+                "cliprange": self.cliprange,
+                "verbose": self.verbose,
+                "policy": self.policy,
+                "observation_space": self.observation_space,
+                "action_space": self.action_space,
+                "n_envs": self.n_envs,
+                "_vectorize_action": self._vectorize_action,
+                "policy_kwargs": self.policy_kwargs
+            }
+
+            params = self.sess.run(self.params)
+
+            self._save_to_file(save_path, data=data, params=params)
+
+    def get_next_action(self, obs):
+        actions, values, self.states, neglogpacs = self.step(obs, self.states, self.dones)
+        self.__obs.append(obs.copy())
+        self.__actions.append(actions)
+        self.__values.append(values)
+        self.__neglogpacs.append(neglogpacs)
+        self.__dones.append(self.dones)
+        clipped_actions = actions
+
+        # Clip the actions to avoid out of bound error
+        if isinstance(self.env.action_space, gym.spaces.Box):
+            clipped_actions = np.clip(actions, self.env.action_space.low, self.env.action_space.high)
+
+        return clipped_actions
+
+    def collect(self, obs, rewards, dones):
+        self.obs[:] = obs
+        self.dones = dones
+        self.__rewards.append(rewards)
 
 
 def get_schedule_fn(value_schedule):
@@ -542,16 +472,3 @@ def safe_mean(arr):
     :return: (float)
     """
     return np.nan if len(arr) == 0 else np.mean(arr)
-
-def tensorboard_log(logger, epinfobuf, sess):
-    with tf.variable_scope("ppo2_model/pi", reuse=True):
-        noise_std = tf.get_variable(name='logstd')
-    noise = sess.run(noise_std)
-
-    logger.logkv("noise", safe_mean(np.exp(noise)))
-
-    # reward infos
-    if 'reward_info' in epinfobuf[0]:
-        for k in epinfobuf[0]['reward_info']:
-            logger.logkv("eprewardinfos/" + k, safe_mean([epinfo['reward_info'][k] for epinfo in epinfobuf]))
-

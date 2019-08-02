@@ -74,7 +74,7 @@ class ENVIRONMENT : public RaisimGymEnv {
     pTarget_.setZero(gcDim_); vTarget_.setZero(gvDim_); pTarget12_.setZero(nJoints_);
 
     /// this is nominal configuration of anymal
-    gc_init_ << 0, 0, 0.44, 0.7071067, 0.70710678, 0.0, 0.0, 0.0, 0.0, -0.7, 0, 0, -0.7, 0.00, 0, -0.7, 0, 0, -0.7;
+    gc_init_ << 0, 0, 0.46, 1, 0.0, 0.0, 0.0, 0.0, 0.5, -1, 0, 0.5, -1, 0.00, 0.5, -1, 0, 0.5, -0.7;
 
     /// set pd gains
     Eigen::VectorXd jointPgain(gcDim_), jointDgain(gvDim_);
@@ -112,10 +112,10 @@ class ENVIRONMENT : public RaisimGymEnv {
     gui::rewardLogger.init({"forwardVelReward", "torqueReward"});
 
     /// indices of links that should not make contact with ground
-    footIndices_.insert(laikago_->getBodyIdx("FR_lower_leg"));
-    footIndices_.insert(laikago_->getBodyIdx("FL_lower_leg"));
-    footIndices_.insert(laikago_->getBodyIdx("RR_lower_leg"));
-    footIndices_.insert(laikago_->getBodyIdx("RL_lower_leg"));
+    footIndices_.insert(laikago_->getBodyIdx("FR_calf"));
+    footIndices_.insert(laikago_->getBodyIdx("FL_calf"));
+    footIndices_.insert(laikago_->getBodyIdx("RR_calf"));
+    footIndices_.insert(laikago_->getBodyIdx("RL_calf"));
 
     /// visualize if it is the first environment
     if (visualizable_) {
@@ -174,7 +174,7 @@ class ENVIRONMENT : public RaisimGymEnv {
     updateObservation();
 
     torqueReward_ = torqueRewardCoeff_ * laikago_->getGeneralizedForce().squaredNorm();
-    forwardVelReward_ = forwardVelRewardCoeff_ * bodyLinearVel_[2];
+    forwardVelReward_ = forwardVelRewardCoeff_ * bodyLinearVel_[0];
 
     if(visualizeThisStep_) {
       gui::rewardLogger.log("torqueReward", torqueReward_);
@@ -183,7 +183,7 @@ class ENVIRONMENT : public RaisimGymEnv {
       /// set camera
       auto vis = raisim::OgreVis::get();
       vis->select(laikagoVisual_->at(0), false);
-      vis->getCameraMan()->setYawPitchDist(Ogre::Radian(-1.57), Ogre::Radian(-1.0), 3);
+      vis->getCameraMan()->setYawPitchDist(Ogre::Radian(0), Ogre::Radian(-1.0), 3);
     }
 
     return torqueReward_ + forwardVelReward_;
