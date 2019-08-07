@@ -1,17 +1,14 @@
-import time
 import sys
 import multiprocessing
 
 import gym
 import numpy as np
 import tensorflow as tf
-
-from raisim_gym.archi.policies import LstmPolicy, ActorCriticPolicy
-from stable_baselines import logger
-from stable_baselines.common import explained_variance, ActorCriticRLModel, tf_util, SetVerbosity, TensorboardWriter
+from stable_baselines.common import tf_util, SetVerbosity
+from stable_baselines.common import set_global_seeds
 
 
-class PPO3(ActorCriticRLModel):
+class PPO3:
     """
     Proximal Policy Optimization algo (GPU version).
     Paper: https://arxiv.org/abs/1707.06347
@@ -38,13 +35,10 @@ class PPO3(ActorCriticRLModel):
         WARNING: this logging can take a lot of space quickly
     """
 
-    def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
+    def __init__(self, num_envs, train_model, act_model, graph, sess, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.5,
                  max_grad_norm=0.5, lam=0.95, nminibatches=4, noptepochs=4, cliprange=0.2, verbose=0,
-                 tensorboard_log=None, _init_setup_model=True, policy_kwargs=None,
+                 tensorboard_log=None, _init_setup_model=True,
                  full_tensorboard_log=False, reset_num_timesteps=True, seed=None):
-
-        super(PPO3, self).__init__(policy=policy, env=env, verbose=verbose, requires_vec_env=True,
-                                   _init_setup_model=_init_setup_model, policy_kwargs=policy_kwargs)
 
         self.learning_rate = learning_rate
         self.cliprange = cliprange
@@ -56,11 +50,11 @@ class PPO3(ActorCriticRLModel):
         self.lam = lam
         self.nminibatches = nminibatches
         self.noptepochs = noptepochs
-        self.tensorboard_log = tensorboard_log
         self.full_tensorboard_log = full_tensorboard_log
+        self.num_timesteps = 0
 
-        self.graph = None
-        self.sess = None
+        self.graph = graph
+        self.sess = sess
         self.action_ph = None
         self.advs_ph = None
         self.rewards_ph = None
@@ -76,8 +70,8 @@ class PPO3(ActorCriticRLModel):
         self.params = None
         self._train = None
         self.loss_names = None
-        self.train_model = None
-        self.act_model = None
+        self.train_model = train_model
+        self.act_model = act_model
         self.step = None
         self.proba_step = None
         self.value = None
@@ -85,11 +79,15 @@ class PPO3(ActorCriticRLModel):
         self.n_batch = None
         self.summary = None
         self.episode_reward = None
+        self.average_performance = None
 
-        # added by Jemin
+        self.verbose = verbose
         self.actions = None
+        self.n_envs = num_envs
         self.__new_tb_log = None
         self.__states = None
+        self.action_space = train_model.action_space
+        self.observation_space = train_model.observation_space
 
         self.__rewards = []
         self.__obs = []
@@ -112,20 +110,13 @@ class PPO3(ActorCriticRLModel):
         if _init_setup_model:
             self.setup_model()
 
-        self.__new_tb_log = self._init_num_timesteps(reset_num_timesteps)
-
-        n_env = env.num_envs
-        self.batch_ob_shape = (n_env*n_steps,) + env.observation_space.shape
-        self.obs = np.zeros((n_env,) + env.observation_space.shape, dtype=env.observation_space.dtype.name)
-        self.obs[:] = env.reset()
+        n_env = num_envs
+        self.batch_ob_shape = (n_env*n_steps,) + self.observation_space.shape
+        self.obs = np.zeros((n_env,) + self.observation_space.shape, dtype=self.observation_space.dtype.name)
+        # self.obs[:] = env.reset()
         self.n_steps = n_steps
         self.states = self.initial_state
         self.dones = [False for _ in range(n_env)]
-
-        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, 'PPO', self.__new_tb_log) \
-                as writer:
-            self._setup_learn(seed)
-            self.episode_reward = np.zeros((self.n_envs,))
 
     def _get_pretrain_placeholders(self):
         policy = self.act_model
@@ -136,37 +127,15 @@ class PPO3(ActorCriticRLModel):
     def setup_model(self):
         with SetVerbosity(self.verbose):
 
-            assert issubclass(self.policy, ActorCriticPolicy), "Error: the input policy for the PPO2 model must be " \
-                                                               "an instance of common.policies.ActorCriticPolicy."
-
             self.n_batch = self.n_envs * self.n_steps
-
             n_cpu = multiprocessing.cpu_count()
             if sys.platform == 'darwin':
                 n_cpu //= 2
 
-            self.graph = tf.Graph()
             with self.graph.as_default():
-                self.sess = tf_util.make_session(num_cpu=n_cpu, graph=self.graph)
-
-                n_batch_step = None
-                n_batch_train = None
-                if issubclass(self.policy, LstmPolicy):
-                    assert self.n_envs % self.nminibatches == 0, "For recurrent policies, " \
-                                                                 "the number of environments run in parallel should be a multiple of nminibatches."
-                    n_batch_step = self.n_envs
-                    n_batch_train = self.n_batch // self.nminibatches
-
-                act_model = self.policy(self.sess, self.observation_space, self.action_space, self.n_envs, 1,
-                                        n_batch_step, reuse=False, **self.policy_kwargs)
-                with tf.variable_scope("train_model", reuse=True,
-                                       custom_getter=tf_util.outer_scope_getter("train_model")):
-                    train_model = self.policy(self.sess, self.observation_space, self.action_space,
-                                              self.n_envs // self.nminibatches, self.n_steps, n_batch_train,
-                                              reuse=True, **self.policy_kwargs)
 
                 with tf.variable_scope("loss", reuse=False):
-                    self.action_ph = train_model.pdtype.sample_placeholder([None], name="action_ph")
+                    self.action_ph = self.train_model.action_ph
                     self.advs_ph = tf.placeholder(tf.float32, [None], name="advs_ph")
                     self.rewards_ph = tf.placeholder(tf.float32, [None], name="rewards_ph")
                     self.old_neglog_pac_ph = tf.placeholder(tf.float32, [None], name="old_neglog_pac_ph")
@@ -174,12 +143,12 @@ class PPO3(ActorCriticRLModel):
                     self.learning_rate_ph = tf.placeholder(tf.float32, [], name="learning_rate_ph")
                     self.clip_range_ph = tf.placeholder(tf.float32, [], name="clip_range_ph")
 
-                    neglogpac = train_model.proba_distribution.neglogp(self.action_ph)
-                    self.entropy = tf.reduce_mean(train_model.proba_distribution.entropy())
+                    neglogpac = self.train_model.proba_distribution.neglogp(self.action_ph)
+                    self.entropy = tf.reduce_mean(self.train_model.proba_distribution.entropy())
 
-                    vpred = train_model._value
+                    vpred = self.train_model.value
                     vpredclipped = self.old_vpred_ph + tf.clip_by_value(
-                        train_model._value - self.old_vpred_ph, - self.clip_range_ph, self.clip_range_ph)
+                        self.train_model.value - self.old_vpred_ph, - self.clip_range_ph, self.clip_range_ph)
                     vf_losses1 = tf.square(vpred - self.rewards_ph)
                     vf_losses2 = tf.square(vpredclipped - self.rewards_ph)
                     self.vf_loss = .5 * tf.reduce_mean(tf.maximum(vf_losses1, vf_losses2))
@@ -192,8 +161,10 @@ class PPO3(ActorCriticRLModel):
                     self.clipfrac = tf.reduce_mean(tf.cast(tf.greater(tf.abs(ratio - 1.0),
                                                                       self.clip_range_ph), tf.float32))
                     loss = self.pg_loss - self.entropy * self.ent_coef + self.vf_loss * self.vf_coef
+                    self.average_performance = tf.reduce_mean(self.rewards_ph)
 
                     tf.summary.scalar('entropy_loss', self.entropy)
+                    tf.summary.scalar('average_performance', self.average_performance)
                     tf.summary.scalar('policy_gradient_loss', self.pg_loss)
                     tf.summary.scalar('value_function_loss', self.vf_loss)
                     tf.summary.scalar('approximate_kullback-leiber', self.approxkl)
@@ -214,6 +185,10 @@ class PPO3(ActorCriticRLModel):
 
                 self.loss_names = ['policy_loss', 'value_loss', 'policy_entropy', 'approxkl', 'clipfrac']
 
+                with tf.variable_scope("000progress000", reuse=False):
+                    trajectory_length = self.n_steps/(tf.reduce_sum(self.train_model.masks_ph)/self.n_envs+1)
+                    tf.summary.scalar('average_trajectory_length', trajectory_length)
+
                 with tf.variable_scope("input_info", reuse=False):
                     tf.summary.scalar('discounted_rewards', tf.reduce_mean(self.rewards_ph))
                     tf.summary.scalar('learning_rate', tf.reduce_mean(self.learning_rate_ph))
@@ -230,16 +205,14 @@ class PPO3(ActorCriticRLModel):
                         tf.summary.histogram('old_neglog_action_probabilty', self.old_neglog_pac_ph)
                         tf.summary.histogram('old_value_pred', self.old_vpred_ph)
                         if tf_util.is_image(self.observation_space):
-                            tf.summary.image('observation', train_model.obs_ph)
+                            tf.summary.image('observation', self.train_model.obs_ph)
                         else:
-                            tf.summary.histogram('observation', train_model.obs_ph)
+                            tf.summary.histogram('observation', self.train_model.obs_ph)
 
-                self.train_model = train_model
-                self.act_model = act_model
-                self.step = act_model.step
-                self.proba_step = act_model.proba_step
-                self.value = act_model.value
-                self.initial_state = act_model.initial_state
+                self.step = self.act_model.step
+                self.proba_step = self.act_model.proba_step
+                self.value = self.act_model.value
+                self.initial_state = self.act_model.initial_state
                 tf.global_variables_initializer().run(session=self.sess)  # pylint: disable=E1101
 
                 self.summary = tf.summary.merge_all()
@@ -267,10 +240,10 @@ class PPO3(ActorCriticRLModel):
         advs = (advs - advs.mean()) / (advs.std() + 1e-8)
         td_map = {self.train_model.obs_ph: obs, self.action_ph: actions, self.advs_ph: advs, self.rewards_ph: returns,
                   self.learning_rate_ph: learning_rate, self.clip_range_ph: cliprange,
-                  self.old_neglog_pac_ph: neglogpacs, self.old_vpred_ph: values}
+                  self.old_neglog_pac_ph: neglogpacs, self.old_vpred_ph: values, self.train_model.masks_ph: masks}
+
         if states is not None:
             td_map[self.train_model.states_ph] = states
-            td_map[self.train_model.masks_ph] = masks
 
         if states is None:
             update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
@@ -297,8 +270,8 @@ class PPO3(ActorCriticRLModel):
 
         return policy_loss, value_loss, policy_entropy, approxkl, clipfrac
 
-    def learn(self, total_timesteps=0, callback=None, seed=None, log_interval=1, tb_log_name="PPO2",
-              eval_every_n=5, reset_num_timesteps=True, record_video=False, update=0, nupdates=0):
+    def learn(self, obs, writer, update=0, nupdates=0):
+        self.obs[:] = obs
 
         # batch of steps to batch of rollouts
         self.__obs = np.asarray(self.__obs, dtype=self.obs.dtype)
@@ -307,7 +280,7 @@ class PPO3(ActorCriticRLModel):
         self.__values = np.asarray(self.__values, dtype=np.float32)
         self.__neglogpacs = np.asarray(self.__neglogpacs, dtype=np.float32)
         self.__dones = np.asarray(self.__dones, dtype=np.bool)
-        last_values = self.value(self.obs, self.states, self.dones)
+        last_values = self.act_model.value_eval(self.obs, self.states, self.dones)
         # discount/bootstrap off value fn
         mb_advs = np.zeros_like(self.__rewards)
         true_reward = np.copy(self.__rewards)
@@ -328,48 +301,46 @@ class PPO3(ActorCriticRLModel):
         self.__obs, self.__returns, self.__dones, self.__actions, self.__values, self.__neglogpacs, self.__true_reward = \
             map(swap_and_flatten, (self.__obs, mb_returns, self.__dones, self.__actions, self.__values, self.__neglogpacs, true_reward))
 
-        with SetVerbosity(self.verbose), TensorboardWriter(self.graph, self.tensorboard_log, tb_log_name,
-                                                           self.__new_tb_log) as writer:
-            assert self.n_batch % self.nminibatches == 0
-            batch_size = self.n_batch // self.nminibatches
-            frac = 1.0 - (update - 1.0) / nupdates
-            lr_now = self.learning_rate(frac)
-            cliprangenow = self.cliprange(frac)
+        assert self.n_batch % self.nminibatches == 0
+        batch_size = self.n_batch // self.nminibatches
+        frac = 1.0 - (update - 1.0) / nupdates
+        lr_now = self.learning_rate(frac)
+        cliprangenow = self.cliprange(frac)
 
-            mb_loss_vals = []
-            if self.__states is None:  # nonrecurrent version
-                update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
-                inds = np.arange(self.n_batch)
-                for epoch_num in range(self.noptepochs):
-                    np.random.shuffle(inds)
-                    for start in range(0, self.n_batch, batch_size):
-                        timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_batch + epoch_num *
-                                                                        self.n_batch + start) // batch_size)
-                        end = start + batch_size
-                        mbinds = inds[start:end]
-                        slices = (arr[mbinds] for arr in (self.__obs, self.__returns, self.__dones, self.__actions, self.__values, self.__neglogpacs))
-                        mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, writer=writer,
-                                                             update=timestep))
-                self.num_timesteps += self.n_steps * self.n_envs
-            else:  # recurrent version
-                update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
-                assert self.n_envs % self.nminibatches == 0
-                env_indices = np.arange(self.n_envs)
-                flat_indices = np.arange(self.n_envs * self.n_steps).reshape(self.n_envs, self.n_steps)
-                envs_per_batch = batch_size // self.n_steps
-                for epoch_num in range(self.noptepochs):
-                    np.random.shuffle(env_indices)
-                    for start in range(0, self.n_envs, envs_per_batch):
-                        timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_envs + epoch_num *
-                                                                        self.n_envs + start) // envs_per_batch)
-                        end = start + envs_per_batch
-                        mb_env_inds = env_indices[start:end]
-                        mb_flat_inds = flat_indices[mb_env_inds].ravel()
-                        slices = (arr[mb_flat_inds] for arr in (self.__obs, self.__returns, self.__masks, self.__actions, self.__values, self.__neglogpacs))
-                        mb_states = self.__states[mb_env_inds]
-                        mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, update=timestep,
-                                                             writer=writer, states=mb_states))
-                self.num_timesteps += self.n_steps * self.n_envs
+        mb_loss_vals = []
+        if self.__states is None:  # nonrecurrent version
+            update_fac = self.n_batch // self.nminibatches // self.noptepochs + 1
+            inds = np.arange(self.n_batch)
+            for epoch_num in range(self.noptepochs):
+                np.random.shuffle(inds)
+                for start in range(0, self.n_batch, batch_size):
+                    timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_batch + epoch_num *
+                                                                    self.n_batch + start) // batch_size)
+                    end = start + batch_size
+                    mbinds = inds[start:end]
+                    slices = (arr[mbinds] for arr in (self.__obs, self.__returns, self.__dones, self.__actions, self.__values, self.__neglogpacs))
+                    mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, writer=writer,
+                                                         update=timestep))
+            self.num_timesteps += self.n_steps * self.n_envs
+        else:  # recurrent version
+            update_fac = self.n_batch // self.nminibatches // self.noptepochs // self.n_steps + 1
+            assert self.n_envs % self.nminibatches == 0
+            env_indices = np.arange(self.n_envs)
+            flat_indices = np.arange(self.n_envs * self.n_steps).reshape(self.n_envs, self.n_steps)
+            envs_per_batch = batch_size // self.n_steps
+            for epoch_num in range(self.noptepochs):
+                np.random.shuffle(env_indices)
+                for start in range(0, self.n_envs, envs_per_batch):
+                    timestep = self.num_timesteps // update_fac + ((self.noptepochs * self.n_envs + epoch_num *
+                                                                    self.n_envs + start) // envs_per_batch)
+                    end = start + envs_per_batch
+                    mb_env_inds = env_indices[start:end]
+                    mb_flat_inds = flat_indices[mb_env_inds].ravel()
+                    slices = (arr[mb_flat_inds] for arr in (self.__obs, self.__returns, self.__masks, self.__actions, self.__values, self.__neglogpacs))
+                    mb_states = self.__states[mb_env_inds]
+                    mb_loss_vals.append(self._train_step(lr_now, cliprangenow, *slices, update=timestep,
+                                                         writer=writer, states=mb_states))
+            self.num_timesteps += self.n_steps * self.n_envs
 
         self.__obs, self.__rewards, self.__actions, self.__values, self.__dones, self.__neglogpacs = [], [], [], [], [], []
 
@@ -400,6 +371,7 @@ class PPO3(ActorCriticRLModel):
 
     def get_next_action(self, obs):
         actions, values, self.states, neglogpacs = self.step(obs, self.states, self.dones)
+        self.obs[:] = obs
         self.__obs.append(obs.copy())
         self.__actions.append(actions)
         self.__values.append(values)
@@ -408,13 +380,12 @@ class PPO3(ActorCriticRLModel):
         clipped_actions = actions
 
         # Clip the actions to avoid out of bound error
-        if isinstance(self.env.action_space, gym.spaces.Box):
-            clipped_actions = np.clip(actions, self.env.action_space.low, self.env.action_space.high)
+        if isinstance(self.action_space, gym.spaces.Box):
+            clipped_actions = np.clip(actions, self.action_space.low, self.action_space.high)
 
         return clipped_actions
 
     def collect(self, obs, rewards, dones):
-        self.obs[:] = obs
         self.dones = dones
         self.__rewards.append(rewards)
 

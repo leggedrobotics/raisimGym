@@ -1,0 +1,7 @@
+PPO3 is based on PPO2. It is meant to be for experts. If you are new to stable-baselines or baselines, please learn to
+use PPO2 first.
+
+This class lets you create graph outside. You pass in a train_model and act_model in the constructor. The both models
+are interface classes that define what is action, value and observation. This way, you can have one big graph and
+share it between multiple agents. You can also control data collection yourself, which gives more freedom in designing
+training environment.
