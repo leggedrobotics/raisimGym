@@ -35,7 +35,7 @@ Now install pybind11 as following
 ```commandline
 cd $WORKSPACE
 git clone https://github.com/pybind/pybind11.git
-cd pybind11 && git checkout v2.2.4 && mkdir build && cd build
+cd pybind11 && git checkout v2.3 && mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF
 make install -j4
 ```
