@@ -28,5 +28,5 @@ docker run -it \
     -env="XAUTHORITY=$XAUTH" \
     --volume="$XAUTH:$XAUTH" \
     --runtime=nvidia \
-    "python3 setup.py --CMAKE_PREFIX_PATH $LOCAL_BUILD --env anymal" && python3 scripts/anymal_blind_locomotion.py \
-    raisim_gym
+    raisim_gym \
+    bash -c "cd /raisim_workspace/raisimGym/tests && bash run_anymal_example2.bash"
