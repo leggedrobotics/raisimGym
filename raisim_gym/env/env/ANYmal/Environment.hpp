@@ -107,8 +107,9 @@ class ENVIRONMENT : public RaisimGymEnv {
         Eigen::VectorXd::Constant(12, 10.0); /// joint velocities
 
     /// Reward coefficients
-    forwardVelRewardCoeff_ = cfg["forwardVelRewardCoeff"].as<double>();
-    torqueRewardCoeff_ = cfg["torqueRewardCoeff"].as<double>();
+    READ_YAML(double, forwardVelRewardCoeff_, cfg["forwardVelRewardCoeff"])
+    READ_YAML(double, torqueRewardCoeff_, cfg["torqueRewardCoeff"])
+
     gui::rewardLogger.init({"forwardVelReward", "torqueReward"});
 
     /// indices of links that should not make contact with ground

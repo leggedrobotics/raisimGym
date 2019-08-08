@@ -4,10 +4,6 @@
 #include "Environment.hpp"
 #include "VectorizedEnvironment.hpp"
 
-#define __RSG_MAKE_STR(x) #x
-#define _RSG_MAKE_STR(x) __RSG_MAKE_STR(x)
-#define RSG_MAKE_STR(x) _RSG_MAKE_STR(x)
-
 namespace py = pybind11;
 using namespace raisim;
 
@@ -36,6 +32,8 @@ PYBIND11_MODULE(_raisim_gym, m) {
     .def("getNumOfEnvs", &VectorizedEnvironment<ENVIRONMENT>::getNumOfEnvs)
     .def("startRecordingVideo", &VectorizedEnvironment<ENVIRONMENT>::startRecordingVideo)
     .def("stopRecordingVideo", &VectorizedEnvironment<ENVIRONMENT>::stopRecordingVideo)
+    .def("showWindow", &VectorizedEnvironment<ENVIRONMENT>::showWindow)
+    .def("hideWindow", &VectorizedEnvironment<ENVIRONMENT>::hideWindow)
     .def("curriculumUpdate", &VectorizedEnvironment<ENVIRONMENT>::curriculumUpdate);
 
 }

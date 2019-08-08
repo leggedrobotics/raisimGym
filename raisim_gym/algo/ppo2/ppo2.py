@@ -428,8 +428,10 @@ class Runner(AbstractEnvRunner):
         mb_states = self.states
         ep_infos = []
 
-        if record_video:
-            self.env.start_recording_video(video_name)
+        if test_mode:
+            self.env.wrapper.showWindow()
+            if record_video:
+                self.env.start_recording_video(video_name)
 
         for _ in range(self.n_steps):
             actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
@@ -449,8 +451,10 @@ class Runner(AbstractEnvRunner):
                     ep_infos.append(maybe_ep_info)
             mb_rewards.append(rewards)
 
-        if record_video:
-            self.env.stop_recording_video()
+        if test_mode:
+            self.env.wrapper.hideWindow()
+            if record_video:
+                self.env.stop_recording_video()
 
         # batch of steps to batch of rollouts
         mb_obs = np.asarray(mb_obs, dtype=self.obs.dtype)
