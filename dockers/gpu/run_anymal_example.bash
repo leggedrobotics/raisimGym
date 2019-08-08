@@ -29,4 +29,4 @@ docker run -it \
     --volume="$XAUTH:$XAUTH" \
     --runtime=nvidia \
     raisim_gym \
-    bash -c "cd /raisim_workspace/raisimGym/tests && bash run_anymal_example2.bash"
+    bash -c "cd /raisim_workspace/raisimGym/tests && bash test_anymal_example.bash"
