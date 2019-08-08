@@ -29,4 +29,4 @@ docker run -it \
     --volume="$XAUTH:$XAUTH" \
     --runtime=nvidia \
     raisim_gym \
-    bash -c "cd /raisim_workspace/raisimGym/tests && bash test_anymal_example.bash"
+    bash -c "python3 setup.py install --CMAKE_PREFIX_PATH /raisim_build --env anymal && python3 scripts/anymal_blind_locomotion.py"
