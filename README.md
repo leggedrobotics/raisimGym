@@ -84,6 +84,8 @@ python3 scripts/anymal_blind_locomotion.py
 3. Create a container using the provided docker runner ```$WORKSPACE/raisimGym/dockers/gpu/runner.bash```
 4. Inside the container, compile your environment and execute your runner
 
+## Tutorial
+Dr. Inkyu Sa kindly provided a comphensive tutorial on raisimGym [here](https://github.com/inkyusa/raisimGymTutorial)
 
 ## Examples of trained policies
 
