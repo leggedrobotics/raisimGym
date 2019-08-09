@@ -116,3 +116,11 @@ Fork the repo, make changes and then send a pull request. Instructions can be fo
 
 ## References
 [1] Schulman, John, et al. "Proximal policy optimization algorithms." arXiv preprint arXiv:1707.06347 (2017).
+
+## Contributors
+
+Jemin Hwangbo is developing/manaing raisimGym with help from the followig contributors
+
+- Inkyu Sa
+
+
