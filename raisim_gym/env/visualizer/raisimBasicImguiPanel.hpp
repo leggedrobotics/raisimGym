@@ -119,9 +119,9 @@ void imguiRenderCallBack() {
       } else
         ImGui::Text("Unnamed object");
 
-      raisim::Vec<3> pos; ro->getPosition_W(li, pos);
-      raisim::Vec<3> vel; ro->getVelocity_W(li, vel);
-      raisim::Vec<4> ori; raisim::Mat<3,3> mat; ro->getOrientation_W(li, mat); raisim::rotMatToQuat(mat, ori);
+      raisim::Vec<3> pos; ro->getPosition(li, pos);
+      raisim::Vec<3> vel; ro->getVelocity(li, vel);
+      raisim::Vec<4> ori; raisim::Mat<3,3> mat; ro->getOrientation(li, mat); raisim::rotMatToQuat(mat, ori);
       ImGui::PopFont();
 
       ImGui::PushFont(fontMid);

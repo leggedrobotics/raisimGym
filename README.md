@@ -63,13 +63,9 @@ python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env /WHERE/YOUR/CUSTO
 The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
 
 ## Compiling examples
-For the ANYmal example,
+We provide a shortcut for building examples. Replace ```$EXAMPLE_NAME``` by one of the following names: anymal, laikago, and quadrotor
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env anymal
-```
-For the Laikago example,
-```
-python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env laikago
+python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env $EXAMPLE_NAME
 ```
 
 ## Run
@@ -101,6 +97,9 @@ Initial policy | 38 seconds of training
 :-----------------------------------:|:------------------------------------:
 ![alt-text-1](img/100.gif "title-1") | ![alt-text-2](img/150.gif "title-2")
 
+### Quadrotor
+This quadrotor example is not fully tuned for real applications. Please feel free to optimize the example
+![alt-text-1](img/quad.gif "title-1")
 
 ## Notes
 * Due to conversion between numpy and eigen, the interface class (e.g., VectorizedEnv) should use row major matrices only.

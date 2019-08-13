@@ -546,16 +546,3 @@ def safe_mean(arr):
     :return: (float)
     """
     return np.nan if len(arr) == 0 else np.mean(arr)
-
-def tensorboard_log(logger, epinfobuf, sess):
-    with tf.variable_scope("ppo2_model/pi", reuse=True):
-        noise_std = tf.get_variable(name='logstd')
-    noise = sess.run(noise_std)
-
-    logger.logkv("noise", safe_mean(np.exp(noise)))
-
-    # reward infos
-    if 'reward_info' in epinfobuf[0]:
-        for k in epinfobuf[0]['reward_info']:
-            logger.logkv("eprewardinfos/" + k, safe_mean([epinfo['reward_info'][k] for epinfo in epinfobuf]))
-

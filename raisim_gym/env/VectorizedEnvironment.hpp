@@ -41,6 +41,7 @@ class VectorizedEnvironment {
     cfg_ = YAML::Load(cfg);
     if(cfg_["render"])
       render_ = cfg_["render"].as<bool>();
+
   }
 
   ~VectorizedEnvironment() {
@@ -120,11 +121,11 @@ class VectorizedEnvironment {
   }
 
   void startRecordingVideo(const std::string& fileName) {
-    if(render_ && recordVideo_) environments_[0]->startRecordingVideo(fileName);
+    if(render_) environments_[0]->startRecordingVideo(fileName);
   }
 
   void stopRecordingVideo() {
-    if(render_ && recordVideo_) environments_[0]->stopRecordingVideo();
+    if(render_) environments_[0]->stopRecordingVideo();
   }
 
   void showWindow() {
