@@ -102,10 +102,10 @@ class VectorizedEnvironment {
             Eigen::Ref<EigenBoolVec> &done,
             Eigen::Ref<EigenRowMajorMat> &extraInfo) {
 #pragma omp parallel for schedule(dynamic)
-    for (int i = 0; i < num_envs_; i++)
+    for (int i = 0; i < num_envs_; i++) {
       perAgentStep(i, action, ob, reward, done, extraInfo);
-
-    observe(ob);
+      environments_[i]->observe(ob.row(i));
+    }
   }
 
   void testStep(Eigen::Ref<EigenRowMajorMat> &action,

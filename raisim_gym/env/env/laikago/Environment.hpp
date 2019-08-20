@@ -77,7 +77,7 @@ class ENVIRONMENT : public RaisimGymEnv {
     gc_init_ << 0, 0, 0.46, 1, 0.0, 0.0, 0.0, 0.0, 0.5, -1, 0, 0.5, -1, 0.00, 0.5, -1, 0, 0.5, -0.7;
 
     /// set pd gains
-    Eigen::VectorXd jointPgain(gcDim_), jointDgain(gvDim_);
+    Eigen::VectorXd jointPgain(gvDim_), jointDgain(gvDim_);
     jointPgain.setZero(); jointPgain.tail(nJoints_).setConstant(40.0);
     jointDgain.setZero(); jointDgain.tail(nJoints_).setConstant(1.0);
     laikago_->setPdGains(jointPgain, jointDgain);
