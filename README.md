@@ -4,7 +4,7 @@
 raisimGym is an example of a gym environment using raisim. It uses stable-baselines (https://github.com/hill-a/stable-baselines) for training and pybind11 (https://github.com/pybind/pybind11) for wrapping raisim in python.
 
 ## News
-- There was a bug in the examples. The P gain was set to a wrong dimension. Please update to the latest version. If you used the example as a template for your project, please fix your project as well.
+- There was a bug in the examples. The P gain was set to a wrong dimension. This is fixed as of v0.3.2. Please update to the latest version. If you used the example as a template for your project, please fix your project as well.
 
 ## Requirements
 - Linux only. support ubuntu 16.04 and 18.04 but might work on other distributions
