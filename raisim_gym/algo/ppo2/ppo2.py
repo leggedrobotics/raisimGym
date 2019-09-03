@@ -283,7 +283,7 @@ class PPO2(ActorCriticRLModel):
             nupdates = total_timesteps // self.n_batch
 
             for update in range(1, nupdates + 1):
-                # Do the following if the keyboard does interrupt the learning process.
+                # Do the following except keyboard interrupt the learning process.
                 try:
 
                     if update % eval_every_n == 1:
@@ -371,7 +371,7 @@ class PPO2(ActorCriticRLModel):
 
                 except KeyboardInterrupt:
                     print("You have stopped the learning process by keyboard interrupt. Model Parameter is saved. \n")
-                    # You can actually save files using the instance of self. 
+                    # You can actually save files using the instance of self. save the model parameters. 
                     self.save(log_dir)
                     sys.exit()
 
