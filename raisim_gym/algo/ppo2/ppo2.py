@@ -264,6 +264,14 @@ class PPO2(ActorCriticRLModel):
 
     def learn(self, total_timesteps, callback=None, seed=None, log_interval=1, tb_log_name="PPO2",
               eval_every_n=5, reset_num_timesteps=True, record_video=False, log_dir=""):
+        
+        # Define model saving variables
+        # Current Iteration is basically the update
+        # Initialise variable
+        _savediter = 0
+        _evaliter = 200
+        _counter = 1
+        
         # Transform to callable if needed
         self.learning_rate = get_schedule_fn(self.learning_rate)
         self.cliprange = get_schedule_fn(self.cliprange)
@@ -368,11 +376,20 @@ class PPO2(ActorCriticRLModel):
                         # compatibility with callbacks that have no return statement.
                         if callback(locals(), globals()) is False:
                             break
-
+                    # Save model as depending on evaliter=200 increments. (Will save policies at each iterations 
+                    # from 1 200 600 1200 2000 3000 4200...) 
+                    if update == _savediter or update == 1:
+                                              
+                        # Save model here 
+                        self.save(log_dir + " Iteration {}".format(update))
+                        # Increment to the next saved iteration
+                        _savediter += _evaliter*_counter
+                        _counter += 1
+                        
                 except KeyboardInterrupt:
                     print("You have stopped the learning process by keyboard interrupt. Model Parameter is saved. \n")
                     # You can actually save files using the instance of self. save the model parameters. 
-                    self.save(log_dir)
+                    self.save(log_dir + " Iteration {}".format(update))
                     sys.exit()
 
             return self
