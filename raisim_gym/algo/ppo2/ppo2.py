@@ -1,4 +1,5 @@
 import time
+import math 
 import sys
 import multiprocessing
 from collections import deque
@@ -269,8 +270,7 @@ class PPO2(ActorCriticRLModel):
         # Current Iteration is basically the update
         # Initialise variable
         _savediter = 0
-        # The counter here is set as 4 to start at 200 iterations for saving the model.
-        _counter = 4
+        _counter = (200//eval_every_n)
         
         # Transform to callable if needed
         self.learning_rate = get_schedule_fn(self.learning_rate)
@@ -379,17 +379,18 @@ class PPO2(ActorCriticRLModel):
                     # Save model as depending on evaliter=200 increments. (Will save policies at each iterations 
                     # from 1 200 600 1200 2000 3000 4200...) 
                     if update == _savediter or update == 1:
-                                              
+
                         # Save model here 
-                        self.save(log_dir + " Iteration {}".format(update))
+                        self.save(log_dir + "_Iteration_{}".format(update))
                         # Increment to the next saved iteration
                         _savediter += eval_every_n*_counter
-                        _counter += 4
+                        # Has to be a whole integer number in order to have corresponding video.
+                        _counter += (200 // eval_every_n)
                         
                 except KeyboardInterrupt:
                     print("You have stopped the learning process by keyboard interrupt. Model Parameter is saved. \n")
                     # You can actually save files using the instance of self. save the model parameters. 
-                    self.save(log_dir + " Iteration {}".format(update))
+                    self.save(log_dir + "_Iteration_{}".format(update))
                     sys.exit()
 
             return self
