@@ -269,8 +269,8 @@ class PPO2(ActorCriticRLModel):
         # Current Iteration is basically the update
         # Initialise variable
         _savediter = 0
-        _evaliter = 200
-        _counter = 1
+        # The counter here is set as 4 to start at 200 iterations for saving the model.
+        _counter = 4
         
         # Transform to callable if needed
         self.learning_rate = get_schedule_fn(self.learning_rate)
@@ -383,8 +383,8 @@ class PPO2(ActorCriticRLModel):
                         # Save model here 
                         self.save(log_dir + " Iteration {}".format(update))
                         # Increment to the next saved iteration
-                        _savediter += _evaliter*_counter
-                        _counter += 1
+                        _savediter += eval_every_n*_counter
+                        _counter += 4
                         
                 except KeyboardInterrupt:
                     print("You have stopped the learning process by keyboard interrupt. Model Parameter is saved. \n")
