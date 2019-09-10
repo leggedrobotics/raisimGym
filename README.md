@@ -124,5 +124,6 @@ Fork the repo, make changes and then send a pull request. Instructions can be fo
 Jemin Hwangbo is developing/manaing raisimGym with help from the followig contributors
 
 - Inkyu Sa
+- Haloted
 
 
