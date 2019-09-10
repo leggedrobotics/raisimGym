@@ -1,5 +1,4 @@
 import time
-import math 
 import sys
 import multiprocessing
 from collections import deque
@@ -299,6 +298,9 @@ class PPO2(ActorCriticRLModel):
                         obs, returns, masks, actions, values, neglogpacs, states, ep_infos, true_reward = \
                             runner.run(test_mode=True, record_video=record_video, video_name=log_dir+"/"+str(update-1)+".mp4")
                         print("Average rewards in this test episode ", ep_infos[0]['r'])
+                        model_name = log_dir + "_Iteration_{}".format(update-1)
+                        self.save(model_name)
+                        print("Saving model " + model_name)
                         # tensorboard_log(logger, ep_infos, self.sess)
 
                     assert self.n_batch % self.nminibatches == 0
@@ -355,7 +357,7 @@ class PPO2(ActorCriticRLModel):
                                                                         masks.reshape((self.n_envs, self.n_steps)),
                                                                         writer, self.num_timesteps)
 
-                # Verbose just mean that it will show you the logger on the terminal screen.  
+                    # Verbose just mean that it will show you the logger on the terminal screen.
                     if self.verbose >= 1 and (update % log_interval == 0 or update == 1):
                         explained_var = explained_variance(values, returns)
                         logger.logkv("serial_timesteps", update * self.n_steps)
@@ -376,16 +378,6 @@ class PPO2(ActorCriticRLModel):
                         # compatibility with callbacks that have no return statement.
                         if callback(locals(), globals()) is False:
                             break
-                    # Save model as depending on evaliter=200 increments. (Will save policies at each iterations 
-                    # from 1 200 600 1200 2000 3000 4200...) 
-                    if update == _savediter or update == 1:
-
-                        # Save model here 
-                        self.save(log_dir + "_Iteration_{}".format(update))
-                        # Increment to the next saved iteration
-                        _savediter += eval_every_n*_counter
-                        # Has to be a whole integer number in order to have corresponding video.
-                        _counter += (200 // eval_every_n)
                         
                 except KeyboardInterrupt:
                     print("You have stopped the learning process by keyboard interrupt. Model Parameter is saved. \n")
