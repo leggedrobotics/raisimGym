@@ -371,7 +371,6 @@ class PPO3:
 
     def get_next_action(self, obs):
         actions, values, self.states, neglogpacs = self.step(obs, self.states, self.dones)
-        self.obs[:] = obs
         self.__obs.append(obs.copy())
         self.__actions.append(actions)
         self.__values.append(values)

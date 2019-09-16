@@ -87,7 +87,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='raisim_gym',
-    version='0.3.0',
+    version='0.4.0',
     author='Jemin Hwangbo',
     license="MIT",
     packages=find_packages(),

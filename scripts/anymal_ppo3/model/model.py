@@ -28,7 +28,13 @@ class AnymalArchitecture:
 
         with self.graph.as_default():
             with tf.variable_scope("model", reuse=tf.AUTO_REUSE):
-                self.obs_ph, self.processed_obs = observation_input(self.observation_space, self.num_steps*self.n_env, scale=False)
+
+                batch_size = self.num_steps*self.n_env
+
+                if arch_type is 'train':
+                    batch_size /= cfg["algorithm"]["minibatch"]
+
+                self.obs_ph, self.processed_obs = observation_input(self.observation_space, batch_size, scale=False)
 
                 act_fun = tf.nn.relu
 
