@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 find_package(pybind11 2.3 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(raisimOgre 0.4.0 CONFIG REQUIRED)
+find_package(raisimOgre 0.5.0 CONFIG REQUIRED)
 find_package(OpenMP REQUIRED)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
