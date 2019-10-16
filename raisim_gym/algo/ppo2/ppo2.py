@@ -450,7 +450,7 @@ class Runner(AbstractEnvRunner):
         ep_infos = []
 
         if test_mode:
-            self.env.wrapper.showWindow()
+            self.env.show_window()
             if record_video:
                 self.env.start_recording_video(video_name)
 
@@ -473,7 +473,7 @@ class Runner(AbstractEnvRunner):
             mb_rewards.append(rewards)
 
         if test_mode:
-            self.env.wrapper.hideWindow()
+            self.env.hide_window()
             if record_video:
                 self.env.stop_recording_video()
 

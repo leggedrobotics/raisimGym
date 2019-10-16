@@ -122,6 +122,12 @@ class RaisimGymVecEnv(VecEnv):
         """
         raise RuntimeError('This method is not implemented')
 
+    def show_window(self):
+        self.wrapper.showWindow()
+
+    def hide_window(self):
+        self.wrapper.hideWindow()
+
     @property
     def num_envs(self):
         return self.wrapper.getNumOfEnvs()
