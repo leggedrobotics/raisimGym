@@ -411,7 +411,7 @@ class PPO2(ActorCriticRLModel):
 
         params = self.sess.run(self.params)
 
-        self._save_to_file(save_path, data=data, params=params)
+        self._save_to_file(save_path, data=data, params=params, cloudpickle=True)
 
 
 class Runner(AbstractEnvRunner):
