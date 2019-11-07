@@ -105,6 +105,8 @@ class BasePolicy(ABC):
     :param add_action_ph: (bool) whether or not to create an action placeholder
     """
 
+    recurrent = False
+
     def __init__(self, sess, ob_space, ac_space, n_env, n_steps, n_batch, reuse=False, scale=False,
                  obs_phs=None, add_action_ph=False):
         self.n_env = n_env
