@@ -77,6 +77,13 @@ You can make your own runner. To use the example runner,
 python3 scripts/anymal_blind_locomotion.py
 ```
 
+## How to debug
+C++ is much more efficient than python but it is more prone to errors and you will often see segfaults. The standard tools to fix bugs in C++ are GDB and Valgrind. But it is hard to use them with Python (it is possible but just not as convenient). The recommended debugging option for raisimGym is to use the built-in debugging app which can be compiled by passing `--Debug` flag while running setup.py
+
+For e.g., `python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env anymal --Debug`
+
+This creates an executable. This executable takes three arguments: 1. resource directory 2. configuration file 3. "render" or "no_render". If you choose to render, valgrind will detect many errors in the graphics driver and renderder. These are memory leaks that will not crash your execution.
+
 ## Using raisimGym in Docker
 1. Install docker and Nvidia-docker2 ([instruction](https://github.com/jhwangbo/raisimHelp/tree/master#install-docker--nvidia-docker2)).
 2. Build an image ```docker build -t raisim_gym $WORKSPACE/raisimGym/dockers/gpu```
