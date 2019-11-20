@@ -34,10 +34,13 @@ int main(int argc, char *argv[]) {
   YAML::Node config = YAML::LoadFile(cfgFile);
   std::stringstream config_str;
 
-  if(argv[3] == "no_render")
+  if(std::string(argv[3]) == "no_render") {
     config["environment"]["render"] = false;
-  else
+    std::cout<<argv[3]<<std::endl;
+  } else {
+    std::cout<<argv[3]<<std::endl;
     config["environment"]["render"] = true;
+  }
 
   config_str << config["environment"];
 
