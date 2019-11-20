@@ -11,12 +11,18 @@ from distutils.core import setup
 
 __CMAKE_PREFIX_PATH__ = None
 __ENVIRONMENT_PATH__ = None
+__DEBUG__ = False
 
 if "--CMAKE_PREFIX_PATH" in sys.argv:
     index = sys.argv.index('--CMAKE_PREFIX_PATH')
     __CMAKE_PREFIX_PATH__ = sys.argv[index+1]
     sys.argv.remove("--CMAKE_PREFIX_PATH")
     sys.argv.remove(__CMAKE_PREFIX_PATH__)
+
+if "--Debug" in sys.argv:
+    index = sys.argv.index('--Debug')
+    sys.argv.remove("--Debug")
+    __DEBUG__ = True
 
 if "--env" in sys.argv:
     index = sys.argv.index('--env')
@@ -66,16 +72,11 @@ class CMakeBuild(build_ext):
 
         cmake_args.append('-DRSG_ENVIRONMENT_INCLUDE_PATH=' + __ENVIRONMENT_PATH__)
 
-        cfg = 'Debug' if self.debug else 'Release'
+        cfg = 'Debug' if __DEBUG__ else 'Release'
         build_args = ['--config', cfg]
-        if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
-        else:
-            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
+
+        cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
+        build_args += ['--', '-j2']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),

@@ -40,8 +40,7 @@ class VectorizedEnvironment {
       : resourceDir_(resourceDir) {
     cfg_ = YAML::Load(cfg);
     if(cfg_["render"])
-      render_ = cfg_["render"].as<bool>();
-
+      render_ = cfg_["render"].template as<bool>();
   }
 
   ~VectorizedEnvironment() {
