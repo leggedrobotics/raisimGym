@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
   EigenVec reward(config["environment"]["num_envs"].as<int>(), 1);
   EigenBoolVec dones(config["environment"]["num_envs"].as<int>(), 1);
   EigenRowMajorMat extra_info(config["environment"]["num_envs"].as<int>(), vecEnv.getExtraInfoDim());
+  action.setZero();
 
   Eigen::Ref<EigenRowMajorMat> ob_ref(observation), action_ref(action), extra_info_ref(extra_info);
   Eigen::Ref<EigenVec> reward_ref(reward);
