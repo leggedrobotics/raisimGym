@@ -26,9 +26,9 @@ def main():
                                  choices=['render', 'no_render'],
                                  help='Choose render or no_render.')
     parser_debug.add_argument('--cfg', type=str,
-                               help='Enviroment config file. (ex env/ANYmal/ANYmal_bear2/default_cfg.yaml)')
+                               help='Enviroment config file. Default is `resource`/default_cfg.yaml.')
     parser_debug.add_argument('--xml', type=str,
-                               help='Output result as this xml file name.')
+                               help='Result will be outputed as this xml file name.')
     parser_debug.set_defaults(handler=debug)
 
 
