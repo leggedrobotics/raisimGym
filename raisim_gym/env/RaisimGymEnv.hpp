@@ -28,7 +28,6 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
-#include <pybind11/pybind11.h>
 #include <Eigen/Core>
 #include "raisim/World.hpp"
 #include "raisim/RaisimServer.hpp"
