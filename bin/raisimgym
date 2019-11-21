@@ -1,0 +1,107 @@
+#! /usr/bin/python3
+import subprocess
+import argparse
+import os
+from termcolor import colored
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    parser_build = subparsers.add_parser('build', help='see `build -h`')
+
+    parser_build.add_argument('env', type=str,
+                               help='Enviroment folder path.')
+    parser_build.add_argument('--Debug', action='store_true',
+                               help='Build debug executable.')
+    parser_build.set_defaults(handler=build)
+
+
+    parser_debug = subparsers.add_parser('debug', help='see `debug -h`')
+
+    parser_debug.add_argument('resource', type=str,
+                               help='Enviroment resource folder path. (ex env/ANYmal/ANYmal_bear2)')
+    parser_debug.add_argument('render', type=str,
+                                 choices=['render', 'no_render'],
+                                 help='Choose render or no_render.')
+    parser_debug.add_argument('--cfg', type=str,
+                               help='Enviroment config file. Default is `resource`/default_cfg.yaml.')
+    parser_debug.add_argument('--xml', type=str,
+                               help='Result will be outputed as this xml file name.')
+    parser_debug.set_defaults(handler=debug)
+
+
+    parser_generator = subparsers.add_parser('generate', help='see `generate -h`')
+    parser_generator.add_argument('env', type=str,
+                                 choices=['ANYmal', 'hummingbird', 'laikago'],
+                                 help='Choose which env to generate.')
+    # parser_generator.add_argument('--name', type=str, default='env',
+    #                            help='Environment name.')
+    parser_generator.set_defaults(handler=generator)
+
+    args, unknown = parser.parse_known_args()
+    if hasattr(args, 'handler'):
+        args.handler(args, unknown)
+    else:
+        parser.print_help()
+
+
+def build(args, unknown):
+    current_path = os.getcwd()
+    absolute_path = os.path.realpath(os.path.join(current_path, args.env))
+
+    if not os.path.exists(absolute_path + "/Environment.hpp"):
+        print(colored("[ERROR]: The env folder should contain Environment.hpp", 'red'))
+        exit(0)
+
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.realpath(dirname + "/../")
+    setup_path = root + "/setup.py"
+    os.chdir(root)
+    command = ["python3", setup_path, "install", "--env", absolute_path, "--user"] + unknown
+    if args.Debug:
+        command += ["--Debug"]
+    res = subprocess.run(command)
+
+
+def debug(args, unknown):
+    current_path = os.getcwd()
+    resource_path = os.path.realpath(os.path.join(current_path, args.resource))
+
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.realpath(dirname + "/../")
+    builddir = os.path.realpath(root + "/build/temp.linux-x86_64-3.6")
+
+    if not os.path.exists(builddir + "/debug_app"):
+        print(colored("[ERROR]: The environment is not built with Debug argument. Please build with --Debug option.", 'red'))
+        exit(0)
+    debug_app = os.path.realpath(builddir + "/debug_app")
+
+    if args.cfg is None:
+        config_path = resource_path + "/default_cfg.yaml"
+    else:
+        config_path = os.path.realpath(os.path.join(current_path, args.cfg))
+
+    if args.xml is not None:
+        options = ['--tool=memcheck', '--leak-check=full', '--xml=yes', '--xml-file={}'.format(args.xml)]
+    else:
+        options = ['--tool=memcheck', '--leak-check=full']
+
+    command = ["valgrind", *options, debug_app, resource_path, config_path, args.render] + unknown
+    res = subprocess.run(command)
+
+
+def generator(args, unknown):
+    current_path = os.getcwd()
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.realpath(dirname + "/../")
+    envdir = root + "/raisim_gym/env/env/" + args.env
+
+    command = ["cp", "-r", envdir, current_path]
+    subprocess.run(command)
+    print("Generated \"{}\" env to your workspace.".format(args.env))
+
+
+if __name__ == '__main__':
+    main()
