@@ -2,7 +2,6 @@ FROM nvidia/cudagl:10.1-base-ubuntu18.04
 ENV LANG C.UTF-8
 RUN apt-get update && apt-get install -y git
 RUN apt-get install -y software-properties-common
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
 RUN apt-get install -y gcc-8 g++-8
 ENV CXX=/usr/bin/g++-8
@@ -24,7 +23,7 @@ RUN apt-get install -y cmake python3.6-dev python3-pip libpython3.6-dev libeigen
 # ==================================================================
 # tensorflow
 # ------------------------------------------------------------------
-RUN pip3 install tensorflow-gpu setuptools
+RUN pip3 install tensorflow-gpu==1.14 setuptools
 
 # ==================================================================
 # raisim
@@ -56,7 +55,7 @@ RUN make install -j
 # ------------------------------------------------------------------
 # pybind11
 RUN cd $WORKSPACE && git clone https://github.com/pybind/pybind11.git &&\
-    cd pybind11 && git checkout v2.3.0 && mkdir build && cd build &&\
+    cd pybind11 && git checkout v2.4.3 && mkdir build && cd build &&\
     cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF &&\
     make install -j4
 
