@@ -32,13 +32,14 @@ Install the following dependencies
 - Raisim (https://github.com/leggedrobotics/raisimLib)
 - RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
 - yaml-cpp (sudo apt-get install libyaml-cpp-dev)
+- tensorflow (pip3 install tensorflow or pip3 install tensorflow-gpu)
 
 Now install pybind11 as following
 
 ```commandline
 cd $WORKSPACE
 git clone https://github.com/pybind/pybind11.git
-cd pybind11 && git checkout v2.3 && mkdir build && cd build
+cd pybind11 && git checkout v2.4.3 && mkdir build && cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD -DPYBIND11_TEST=OFF
 make install -j4
 ```
