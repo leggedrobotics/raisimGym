@@ -31,8 +31,8 @@ class RaisimGymVecEnv(VecEnv):
 
         if len(self._extraInfoNames) is not 0:
             info = [{'extra_info': {
-                self._extraInfoNames[j]: self._extraInfo[i, j],
-            }} for j in range(0, len(self._extraInfoNames)) for i in range(self.num_envs)]
+                self._extraInfoNames[j]: self._extraInfo[i, j] for j in range(0, len(self._extraInfoNames))
+            }} for i in range(self.num_envs)]
         else:
             info = [{} for i in range(self.num_envs)]
 

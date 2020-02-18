@@ -48,7 +48,7 @@ WORKDIR $WORKSPACE/raisimOgre/build
 RUN cmake .. -DCMAKE_BUILD_TYPE=Release\
              -DCMAKE_PREFIX_PATH=$LOCAL_BUILD\
              -DCMAKE_INSTALL_PREFIX=$LOCAL_BUILD
-RUN make install -j
+RUN make install -j12
 
 # ==================================================================
 # raisimGym
