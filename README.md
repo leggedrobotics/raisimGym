@@ -62,7 +62,7 @@ export CXX=/usr/bin/g++-8 && export CC=/usr/bin/gcc-8
 Now compile raisimGym as
 
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
+python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
 ```
 The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
 
