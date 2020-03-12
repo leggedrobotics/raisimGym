@@ -32,7 +32,7 @@ Install the following dependencies
 - Raisim (https://github.com/leggedrobotics/raisimLib)
 - RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
 - yaml-cpp (sudo apt-get install libyaml-cpp-dev)
-- tensorflow (pip3 install tensorflow or pip3 install tensorflow-gpu)
+- tensorflow (pip3 install tensorflow==1.14 or pip3 install tensorflow-gpu==1.14)
 
 Now install pybind11 as following
 
@@ -62,7 +62,7 @@ export CXX=/usr/bin/g++-8 && export CC=/usr/bin/gcc-8
 Now compile raisimGym as
 
 ```
-python3 setup.py install --CMAKE_PREFIX_PATH LOCAL_BUILD --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
+python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env /WHERE/YOUR/CUSTOM/ENVIRONMENT/IS
 ```
 The "--env" directory should include a file called "Environment.hpp" which contains ENVIRONMENT class.
 
