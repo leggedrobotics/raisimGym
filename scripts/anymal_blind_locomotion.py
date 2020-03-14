@@ -24,8 +24,6 @@ cfg = YAML().load(open(cfg_abs_path, 'r'))
 # save the configuration and other files
 rsg_root = os.path.dirname(os.path.abspath(__file__)) + '/../'
 log_dir = rsg_root + '/data'
-saver = ConfigurationSaver(log_dir=log_dir+'/ANYmal_blind_locomotion',
-                           save_items=[rsg_root+'raisim_gym/env/env/ANYmal/Environment.hpp', cfg_abs_path])
 
 # create environment from the configuration file
 if args.mode == "test": # for test mode, force # of env to 1
@@ -34,6 +32,8 @@ env = Environment(RaisimGymEnv(__RSCDIR__, dump(cfg['environment'], Dumper=Round
 
 # Get algorithm
 if mode == 'train':
+    saver = ConfigurationSaver(log_dir=log_dir+'/ANYmal_blind_locomotion',
+                               save_items=[rsg_root+'raisim_gym/env/env/ANYmal/Environment.hpp', cfg_abs_path])
     model = PPO2(
         tensorboard_log=saver.data_dir,
         policy=MlpPolicy,
@@ -57,7 +57,7 @@ if mode == 'train':
     TensorboardLauncher(saver.data_dir + '/PPO2_1')
 
     # PPO run
-    model.learn(total_timesteps=400000000, eval_every_n=50, log_dir=saver.data_dir, record_video=cfg['record_video'])
+    model.learn(total_timesteps=400000000, eval_every_n=cfg['environment']['eval_every_n'], log_dir=saver.data_dir, record_video=cfg['record_video'])
 
     # Need this line if you want to keep tensorflow alive after training
     input("Press Enter to exit... Tensorboard will be closed after exit\n")
