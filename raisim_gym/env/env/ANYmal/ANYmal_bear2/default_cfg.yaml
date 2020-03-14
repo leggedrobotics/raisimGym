@@ -4,6 +4,7 @@ record_video: yes
 environment:
   render: True
   num_envs: 100
+  eval_every_n: 50
   num_threads: 40
   simulation_dt: 0.0025
   control_dt: 0.01

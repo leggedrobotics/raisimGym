@@ -57,7 +57,7 @@ if mode == 'train':
     TensorboardLauncher(saver.data_dir + '/PPO2_1')
 
     # PPO run
-    model.learn(total_timesteps=400000000, eval_every_n=50, log_dir=saver.data_dir, record_video=cfg['record_video'])
+    model.learn(total_timesteps=400000000, eval_every_n=cfg['environment']['eval_every_n'], log_dir=saver.data_dir, record_video=cfg['record_video'])
 
     # Need this line if you want to keep tensorflow alive after training
     input("Press Enter to exit... Tensorboard will be closed after exit\n")
