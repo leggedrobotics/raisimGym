@@ -36,6 +36,12 @@ Install the following dependencies
 
 Now install pybind11 as following
 
+#### dependencies
+```commandline
+sudo apt-get install libpython[VERSION OF YOUR CHOICE]-dev
+```
+
+#### pybind11
 ```commandline
 cd $WORKSPACE
 git clone https://github.com/pybind/pybind11.git
