@@ -33,7 +33,7 @@ Install the following dependencies
 - RaisimOgre (https://github.com/leggedrobotics/raisimOgre)
 - yaml-cpp (sudo apt-get install libyaml-cpp-dev)
 - tensorflow (pip3 install tensorflow==1.14 or pip3 install tensorflow-gpu==1.14))
-- (optional) tensorboard (pip3 install tensorboard==1.14)
+- tensorboard (pip3 install tensorboard==1.14)
 
 Now install pybind11 as following
 
