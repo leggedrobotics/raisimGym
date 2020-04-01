@@ -88,6 +88,10 @@ You can also test your trained model. To use the example runner,
 ```$xslt
 python3 scripts/anymal_blind_locomotion.py --mode test --weight /WHERE/YOUR/CUSTOM/MODEL/IS
 ```
+You can continue to improve your model based on pre-trained model. To use the example runner,
+```$xslt
+python3 scripts/anymal_blind_locomotion.py --mode retrain --weight /WHERE/YOUR/CUSTOM/MODEL/IS
+```
 
 ## How to debug
 C++ is much more efficient than python but it is more prone to errors and you will often see segfaults. The standard tools to fix bugs in C++ are GDB and Valgrind. But it is hard to use them with Python (it is possible but just not as convenient). The recommended debugging option for raisimGym is to use the built-in debugging app which can be compiled by passing `--Debug` flag while running setup.py
