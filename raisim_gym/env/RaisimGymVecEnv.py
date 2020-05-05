@@ -21,7 +21,7 @@ class RaisimGymVecEnv(VecEnv):
         self.rewards = [[] for _ in range(self.num_envs)]
 
     def seed(self, seed=None):
-        self.wrapper.seed(seed)
+        self.wrapper.setSeed(seed)
 
     def step(self, action, visualize=False):
         if not visualize:
