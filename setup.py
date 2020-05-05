@@ -96,7 +96,7 @@ setup(
     description='gym for raisim.',
     long_description='',
     ext_modules=[CMakeExtension('_raisim_gym')],
-    install_requires=['gym>=0.2.3', 'ruamel.yaml', 'numpy', 'stable_baselines==2.8'],
+    install_requires=['gym==0.10.9', 'ruamel.yaml', 'numpy', 'stable_baselines==2.8'],
     cmdclass=dict(build_ext=CMakeBuild),
     include_package_data=True,
     zip_safe=False,
