@@ -113,7 +113,7 @@ else:
     ep_len = 0
     for _ in range(100000):
         env.wrapper.showWindow()
-        action, _ = model.predict(obs)
+        action, _ = model.predict(obs, deterministic=True)
         obs, reward, done, infos = env.step(action, visualize=True)
         running_reward += reward[0]
         ep_len += 1
