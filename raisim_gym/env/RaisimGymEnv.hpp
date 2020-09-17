@@ -53,6 +53,10 @@ class RaisimGymEnv {
  public:
   explicit RaisimGymEnv (std::string resourceDir, const YAML::Node& cfg) :
       resourceDir_(std::move(resourceDir)), cfg_(cfg) {
+                                                                                                                                                                                 
+    std::string raisim_path = std::getenv("LOCAL_BUILD");                                                                                                                                               
+    raisim::World::setActivationKey(raisim::Path(raisim_path + "/activation.raisim").getString());
+
     world_ = std::make_unique<raisim::World>();
   }
 
