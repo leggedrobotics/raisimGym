@@ -1,6 +1,6 @@
 from ruamel.yaml import YAML, dump, RoundTripDumper
 from raisim_gym.env.RaisimGymVecEnv import RaisimGymVecEnv as Environment
-from raisim_gym.env.env.ANYmal import __ANYMAL_RESOURCE_DIRECTORY__ as __RSCDIR__
+from raisim_gym.env.env.mabi import __MABI_RESOURCE_DIRECTORY__ as __RSCDIR__
 from raisim_gym.algo.ppo2 import PPO2
 from raisim_gym.archi.policies import MlpPolicy
 from raisim_gym.helper.raisim_gym_helper import ConfigurationSaver, TensorboardLauncher
@@ -32,8 +32,8 @@ env = Environment(RaisimGymEnv(__RSCDIR__, dump(cfg['environment'], Dumper=Round
 
 # Get algorithm
 if mode == 'train':
-    saver = ConfigurationSaver(log_dir=log_dir+'/ANYmal_blind_locomotion',
-                               save_items=[rsg_root+'raisim_gym/env/env/ANYmal/Environment.hpp', cfg_abs_path])
+    saver = ConfigurationSaver(log_dir=log_dir+'/mabi',
+                               save_items=[rsg_root+'raisim_gym/env/env/mabi/Environment.hpp', cfg_abs_path])
     model = PPO2(
         tensorboard_log=saver.data_dir,
         policy=MlpPolicy,
@@ -70,8 +70,8 @@ elif mode == 'retrain':
         print("Loaded weight from {}\n".format(weight_path))
 
     ## Add start weight file to saver
-    saver = ConfigurationSaver(log_dir=log_dir+'/ANYmal_blind_locomotion',
-                               save_items=[rsg_root+'raisim_gym/env/env/ANYmal/Environment.hpp', weight_path, cfg_abs_path])
+    saver = ConfigurationSaver(log_dir=log_dir+'/mabi',
+                               save_items=[rsg_root+'raisim_gym/env/env/mabi/Environment.hpp', weight_path, cfg_abs_path])
 
     model = PPO2.load(weight_path, tensorboard_log=saver.data_dir,
         policy=MlpPolicy,

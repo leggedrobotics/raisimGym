@@ -25,9 +25,10 @@
 #ifndef RAISIMOGREVISUALIZER_RAISIMKEYBOARDCALLBACK_HPP
 #define RAISIMOGREVISUALIZER_RAISIMKEYBOARDCALLBACK_HPP
 
+#include "../../../../collision_free_gym/raisim_gym/env/visualizer/raisimKeyboardCallback.hpp"
+
+#include "../../../../collision_free_gym/raisim_gym/env/visualizer/guiState.hpp"
 #include "raisim/OgreVis.hpp"
-#include "raisimKeyboardCallback.hpp"
-#include "guiState.hpp"
 
 bool raisimKeyboardCallback(const OgreBites::KeyboardEvent &evt) {
   auto &key = evt.keysym.sym;

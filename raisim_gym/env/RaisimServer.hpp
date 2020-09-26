@@ -39,7 +39,7 @@
 #endif
 
 #include "World.hpp"
-#include "helper.hpp"
+#include "../../../collision_free_gym/raisim_gym/env/visualizer/helper.hpp"
 #include "object/ArticulatedSystem/JointAndBodies.hpp"
 #include <mutex>
 #include <thread>

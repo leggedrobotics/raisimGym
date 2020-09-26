@@ -1,8 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
-#include "Environment.hpp"
-#include "VectorizedEnvironment.hpp"
+#include "../../../collision_free_gym/raisim_gym/env/VectorizedEnvironment.hpp"
+#include "env/mabi/Environment.hpp"
 
 namespace py = pybind11;
 using namespace raisim;

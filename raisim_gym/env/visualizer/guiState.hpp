@@ -24,7 +24,7 @@
 
 #ifndef RAISIMOGREVISUALIZER_GUISTATE_HPP
 #define RAISIMOGREVISUALIZER_GUISTATE_HPP
-#include "RewardLogger.hpp"
+#include "../../../../collision_free_gym/raisim_gym/env/RewardLogger.hpp"
 
 namespace raisim{
 namespace gui {

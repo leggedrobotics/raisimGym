@@ -25,7 +25,7 @@
 
 #ifndef RAISIMOGREVISUALIZER_RAISIMBASICIMGUIPANEL_HPP
 #define RAISIMOGREVISUALIZER_RAISIMBASICIMGUIPANEL_HPP
-#include "guiState.hpp"
+#include "../../../../collision_free_gym/raisim_gym/env/visualizer/guiState.hpp"
 
 ImFont* fontBig;
 ImFont* fontMid;
