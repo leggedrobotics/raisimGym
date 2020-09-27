@@ -25,9 +25,9 @@
 #ifndef SRC_RAISIMGYMVECENV_HPP
 #define SRC_RAISIMGYMVECENV_HPP
 
+#include "RaisimGymEnv.hpp"
 #include "omp.h"
 #include "yaml-cpp/yaml.h"
-#include "../../../collision_free_gym/raisim_gym/env/RaisimGymEnv.hpp"
 
 namespace raisim {
 

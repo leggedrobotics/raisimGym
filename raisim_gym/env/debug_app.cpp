@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "../../../collision_free_gym/raisim_gym/env/VectorizedEnvironment.hpp"
-#include "env/mabi/Environment.hpp"
+#include "Environment.hpp"
+#include "VectorizedEnvironment.hpp"
 
 using namespace raisim;
 

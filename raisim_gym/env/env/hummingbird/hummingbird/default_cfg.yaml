@@ -1,0 +1,16 @@
+seed: 1
+record_video: yes
+
+environment:
+  render: yes
+  num_envs: 500
+  num_threads: 40
+  simulation_dt: 0.0025
+  control_dt: 0.01
+  max_time: 5.0
+
+  positionRewardCoeff: -0.002
+#  thrustRewardCoeff: -7e-6
+  thrustRewardCoeff: 0
+  orientationRewardCoeff: -0.002
+  angVelRewardCoeff: -0.0001
