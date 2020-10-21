@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <cstdint>
 #include <set>
+
 #include <raisim/OgreVis.hpp>
 #include "RaisimGymEnv.hpp"
 #include "visSetupCallback.hpp"
@@ -189,6 +190,32 @@ class ENVIRONMENT : public RaisimGymEnv {
   }
 
   float step(const Eigen::Ref<EigenVec>& action) final {
+
+    /// This part should include a Control Input from PD stabilisation
+    
+    ///obScaled gives 18 dimensions first 9 is the rotational matrix, 
+    ///second triplet is position, third triplet is linear velocity 
+    ///fourth triplet is the angular velocity 
+    /// Calculate the q0 to obtain simple rotational angle
+    /// Get the rotational matrix
+    hummingbird_->getRotationMatrix(rot_);
+
+    /// Convert rot_ which is a 3x3 matrix into a quaternion 
+
+    Eigen::Quaternionf quatFromRot(rot_)
+    Eigen::Vector3d Orientation
+    /// quatFromRot basically houses the quaternion in w + xi +yj + zk form
+     
+    Orientation = quatFromRot.toRotationMatrix().eulerAngles(0, 1, 2);
+    
+    /// Define a Vector 
+    
+    double rot_angle = 2.0 * std::acos(quatFromRot.w());  //Angle of rotation obtain q0 is quatFromRot.w()
+    
+    hummingbird_->getAngularVelocity(angVel_W_);
+
+    angVel_B_ = rot_.transpose()*angVel_W_;
+
     /// action scaling
     thrusts_ = action.cast<double>();
     thrusts_ = thrusts_.cwiseProduct(actionStd_);
@@ -199,6 +226,30 @@ class ENVIRONMENT : public RaisimGymEnv {
     Eigen::Vector3d force_B;
     force_B << 0.0, 0.0, genForce(3);
 
+    double kp_rot = -0.2, kd_rot = -0.06;
+    Eigen::Vector3d fbtorque_B 
+
+    if (rot_angle > 1e-6){
+        fbtorque_B = kp_rot * rot_angle * (rot_.transpose() * Orientation) 
+            / sin(rot_angle) + kd_rot * angVel_B_;
+    }
+    else
+    {
+      fbtorque_B = kd_rot * angVel_B_;
+      fbtorque_B(2) = fbtorque_B(2) * 0.15; 
+    }
+
+    torque_B += fbtorque_B;  /// sum of torque inputs
+
+    // clip inputs
+    genForce << torque_B, force_B(2);
+    thrust_ = transsThrust2GenForce_.inverse() * genForce;
+    thrust_ = thrust_.array().cwiseMax(1e-8);   // clip for min value
+    genForce = transsThrust2GenForce_ * thrust_;
+    torque_B = genForce.segment(0,3);
+    force_B << 0.0, 0.0, genForce(3);
+
+////////////////////////
     raisim::Vec<3> torque_W, force_W;
     torque_W.e() = rot_.e() * torque_B;
     force_W.e() = rot_.e() * force_B;

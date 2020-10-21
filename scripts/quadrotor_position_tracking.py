@@ -8,6 +8,17 @@ from _raisim_gym import RaisimGymEnv
 import os
 import math
 import argparse
+ 
+# Function to map the action value to true thrust range none negative to the range between 
+# 0.5 to 4.5 scale
+
+def action2Thrust(mylist):       
+    _actionMean = 2.5
+    _actionStd = 2
+        
+    Newthrust = mylist.astype(float)*_actionStd
+    Newthrust += _actionMean
+    return Newthrust
 
 # configuration
 parser = argparse.ArgumentParser()
@@ -86,7 +97,15 @@ else:
     for _ in range(100000):
         env.wrapper.showWindow()
         action, _ = model.predict(obs)
+        print("Action: {}".format(action))
+        
+        Thrust = action2Thrust(action)
+        print("Thrust: {}".format(Thrust))
         obs, reward, done, infos = env.step(action, visualize=True)
+        print("obs: {}".format(obs))
+        print("reward: {}".format(reward))
+        print("done: {}".format(done))
+        print("infos: {}".format(infos))
         running_reward += reward[0]
         ep_len += 1
         if done:
